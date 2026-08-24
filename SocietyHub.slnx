@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Aspire/">
+    <Project Path="src/Aspire/SocietyHub.AppHost/SocietyHub.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/SocietyHub.Contracts/SocietyHub.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.Persistence/SocietyHub.Persistence.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.ServiceDefaults/SocietyHub.ServiceDefaults.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.SharedKernel/SocietyHub.SharedKernel.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.Web/SocietyHub.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Gateway/">
+    <Project Path="src/Gateway/SocietyHub.ApiGateway/SocietyHub.ApiGateway.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Identity/">
+    <Project Path="src/Services/Identity/SocietyHub.Identity.Api/SocietyHub.Identity.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
+  </Folder>
+</Solution>
