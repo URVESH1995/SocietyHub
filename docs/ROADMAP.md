@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 1 | 65 | 2% |
+| **1** | Daily operations | 10 | 65 | 15% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **25** | **182** | **14%** |
+| | **Total** | **34** | **182** | **19%** |
 
 ---
 
@@ -118,16 +118,16 @@ region-pluggable residency — genuinely can wait.
 **Goal:** visitors, complaints and notifications working end to end for real societies.
 
 ### Cross-cutting — build first, everything else depends on it
-- [x] `P1-01` **Transactional outbox** — staging, dispatcher, ordering, exponential backoff, poisoning; 13 tests
-- [ ] `P1-02` Inbox / idempotent consumer with `EventId` deduplication
-- [ ] `P1-03` MassTransit setup with priority lanes (SOS → gate → normal → bulk)
-- [ ] `P1-04` `Idempotency-Key` middleware for every POST
-- [ ] `P1-05` `Result` → `ProblemDetails` mapping with machine-readable error codes
-- [ ] `P1-06` FluentValidation pipeline
-- [ ] `P1-07` JWT authentication wiring — gateway and every service independently
-- [ ] `P1-08` Authorisation policies for the seven roles
-- [ ] `P1-09` Redis caching abstraction + society profile cache with event invalidation
-- [ ] `P1-10` Distributed lock helper (Redis) for later saga use
+- [x] `P1-01` **Transactional outbox** — staging, dispatcher, ordering, backoff, poisoning
+- [x] `P1-02` **Inbox / idempotent consumer** — composite-key dedup, claim commits with the handler
+- [x] `P1-03` **MassTransit priority lanes** — Critical / Gate / Normal / Bulk, one queue each
+- [x] `P1-04` **`Idempotency-Key` middleware** — society-and-user scoped replay, in-flight lock
+- [x] `P1-05` **`Result` → `ProblemDetails`** with machine-readable codes, plus exception handler
+- [x] `P1-06` **FluentValidation pipeline** — per-endpoint filter, field-level codes
+- [x] `P1-07` **JWT authentication** — validated independently by every service, 30s clock skew
+- [x] `P1-08` **Authorisation policies** for the seven roles, deny-by-default fallback
+- [x] `P1-09` **Redis cache** — tenant-scoped keys by construction, degrades to a miss on outage
+- [x] `P1-10` **Redis distributed lock** — token-checked release, honest about its limits
 
 ### Identity service
 - [ ] `P1-11` ASP.NET Identity with EF Core stores

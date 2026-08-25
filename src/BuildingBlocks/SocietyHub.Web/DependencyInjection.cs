@@ -1,9 +1,16 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SocietyHub.Caching;
 using SocietyHub.SharedKernel.Abstractions;
 using SocietyHub.Web.Globalization;
+using SocietyHub.Web.Idempotency;
+using SocietyHub.Web.Results;
 using SocietyHub.Web.Security;
 using SocietyHub.Web.Tenancy;
+using System.Reflection;
 
 namespace SocietyHub.Web;
 
@@ -26,5 +33,48 @@ public static class DependencyInjection
         services.TryAddSingleton(TimeProvider.System);
 
         return services;
+    }
+
+    /// <summary>
+    /// Everything an API service needs from the platform: request contexts, authentication and
+    /// policies, caching and locking, validation, and problem-details error handling.
+    /// </summary>
+    /// <param name="validatorAssembly">
+    /// Assembly scanned for FluentValidation validators — normally the calling service's.
+    /// </param>
+    public static IServiceCollection AddSocietyHubPlatform(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Assembly validatorAssembly)
+    {
+        services.AddSocietyHubRequestContext();
+        services.AddSocietyHubAuthentication(configuration);
+        services.AddSocietyHubCaching();
+
+        services.AddValidatorsFromAssembly(validatorAssembly, includeInternalTypes: true);
+
+        // ProblemDetails for framework-generated failures too — a 404 from routing should look
+        // like a 404 from a handler, so clients parse one shape rather than two.
+        services.AddProblemDetails();
+        services.AddExceptionHandler<SocietyHubExceptionHandler>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// The middleware order that matters.
+    ///
+    /// Exception handling is outermost so it catches everything after it. Idempotency sits
+    /// after authentication because its key is scoped by society and user, and before the
+    /// endpoints because its whole job is to avoid running one twice.
+    /// </summary>
+    public static WebApplication UseSocietyHubPlatform(this WebApplication app)
+    {
+        app.UseExceptionHandler();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseSocietyHubIdempotency();
+
+        return app;
     }
 }

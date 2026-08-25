@@ -10,6 +10,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SocietyHub.SharedKernel\SocietyHub.SharedKernel.csproj" />
+    <ProjectReference Include="..\SocietyHub.Caching\SocietyHub.Caching.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,9 @@
     <Project Path="src/Aspire/SocietyHub.AppHost/SocietyHub.AppHost.csproj" />
   </Folder>
   <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/SocietyHub.Caching/SocietyHub.Caching.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Contracts/SocietyHub.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.Messaging/SocietyHub.Messaging.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Persistence/SocietyHub.Persistence.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.ServiceDefaults/SocietyHub.ServiceDefaults.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.SharedKernel/SocietyHub.SharedKernel.csproj" />
@@ -19,6 +21,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Platform.Tests/SocietyHub.Platform.Tests.csproj" />
     <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
   </Folder>
 </Solution>

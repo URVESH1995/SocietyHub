@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SocietyHub.Messaging</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SocietyHub.Contracts\SocietyHub.Contracts.csproj" />
+    <ProjectReference Include="..\SocietyHub.Persistence\SocietyHub.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>
