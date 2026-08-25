@@ -7,13 +7,13 @@ source of truth, not any external board.
 
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
-| **0** | Foundation | 22 | 24 | 92% |
-| **1** | Daily operations | 0 | 65 | 0% |
+| **0** | Foundation | 24 | 24 | 100% |
+| **1** | Daily operations | 1 | 65 | 2% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **22** | **182** | **12%** |
+| | **Total** | **25** | **182** | **14%** |
 
 ---
 
@@ -107,9 +107,9 @@ region-pluggable residency — genuinely can wait.
 - [x] `P0-21` Request contexts — `HttpTenantContext`, `HttpCurrentUser`, `HttpLocaleContext`
 - [x] `P0-22` Tenancy test suite — 16 tests, mutation-verified (layers 3 and 4)
 
-### Remaining
-- [ ] `P0-23` **Verify `aspire run` boots the full topology** — needs Docker Desktop
-- [ ] `P0-24` SQL Server row-level security (layer 5) — needs a live SQL Server
+### Verified against live infrastructure
+- [x] `P0-23` **Full topology boots** — SQL Server, Redis, RabbitMQ healthy; gateway routes to Identity through YARP service discovery
+- [x] `P0-24` **Layer 5 — SQL Server row-level security**, proven on SQL Server 2022: filtered reads, blocked cross-tenant insert and row-move, default-deny with no session context, and isolation holding for raw SQL that bypasses EF entirely
 
 ---
 
@@ -118,7 +118,7 @@ region-pluggable residency — genuinely can wait.
 **Goal:** visitors, complaints and notifications working end to end for real societies.
 
 ### Cross-cutting — build first, everything else depends on it
-- [ ] `P1-01` Transactional outbox — entity, interceptor, publisher hosted service
+- [x] `P1-01` **Transactional outbox** — staging, dispatcher, ordering, exponential backoff, poisoning; 13 tests
 - [ ] `P1-02` Inbox / idempotent consumer with `EventId` deduplication
 - [ ] `P1-03` MassTransit setup with priority lanes (SOS → gate → normal → bulk)
 - [ ] `P1-04` `Idempotency-Key` middleware for every POST

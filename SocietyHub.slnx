@@ -18,6 +18,7 @@
     <Project Path="src/Services/Identity/SocietyHub.Identity.Api/SocietyHub.Identity.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
     <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
   </Folder>
 </Solution>
