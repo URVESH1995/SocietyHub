@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 10 | 65 | 15% |
+| **1** | Daily operations | 19 | 65 | 29% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **34** | **182** | **19%** |
+| | **Total** | **43** | **182** | **24%** |
 
 ---
 
@@ -130,15 +130,21 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-10` **Redis distributed lock** — token-checked release, honest about its limits
 
 ### Identity service
-- [ ] `P1-11` ASP.NET Identity with EF Core stores
-- [ ] `P1-12` OpenIddict token issuance
-- [ ] `P1-13` Refresh token rotation with reuse detection
-- [ ] `P1-14` Role model — SuperAdmin, SocietyAdmin, Committee, Resident, Guard, Vendor, Technician
-- [ ] `P1-15` `society_id` claim, plus society switching for users owning flats in more than one
-- [ ] `P1-16` Phone OTP login — hashed, TTL, 3-attempt lockout, per-phone and per-IP limits
-- [ ] `P1-17` Device identity and per-shift PIN for guard tablets
-- [ ] `P1-18` `UserRegistered` published through the outbox
-- [ ] `P1-19` Migrations and seed data
+- [x] `P1-11` **ASP.NET Identity** with EF Core stores; a person is global, their standing is scoped
+- [x] `P1-12` **Token issuance** behind `ITokenIssuer` — direct JWT, not OpenIddict (see note below)
+- [x] `P1-13` **Refresh rotation with reuse detection** — token families; the whole family is revoked on replay
+- [x] `P1-14` **Seven roles**, held per society on `SocietyMembership` rather than globally
+- [x] `P1-15` **`society_id` claim** and society switching for multi-society residents
+- [x] `P1-16` **Phone OTP** — salted hash, 3-attempt cap, per-phone and per-IP limits that fail closed
+- [x] `P1-17` **Guard device identity** — device and guard are separate identities; shift PIN with lockout
+- [x] `P1-18` **`UserRegistered` through the outbox**, committed with the membership that caused it
+- [x] `P1-19` **Migrations and role seed data**
+
+> **Deviation on `P1-12`.** OpenIddict was replaced with direct JWT issuance behind
+> `ITokenIssuer`. Its value is standards-compliant OAuth2/OIDC for third-party clients, a
+> Phase 5 concern — v1.0 has three first-party clients and a phone-OTP sign-in that is not a
+> standard grant in any case. OpenIddict slots in behind the same interface when the public
+> API arrives, without touching a call site.
 
 ### Society service
 - [ ] `P1-20` Society / Tower / Floor / Flat aggregates
