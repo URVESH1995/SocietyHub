@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 26 | 65 | 40% |
+| **1** | Daily operations | 36 | 65 | 55% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **50** | **182** | **27%** |
+| | **Total** | **60** | **182** | **33%** |
 
 ---
 
@@ -156,16 +156,16 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-26` **`ResidentRegistered` and `FlatOccupancyChanged`** through the outbox, only on real change
 
 ### Gate service
-- [ ] `P1-27` `VisitPass` aggregate with OTP and QR
-- [ ] `P1-28` Resident pre-approval flow
-- [ ] `P1-29` Check-in / check-out
-- [ ] `P1-30` Delivery and cab entry, left-at-gate handling
-- [ ] `P1-31` Daily help attendance — punch in/out, monthly sheet
-- [ ] `P1-32` Blacklist
-- [ ] `P1-33` SOS incident capture and fan-out
-- [ ] `P1-34` Visitor photo upload to blob with short-lived SAS URLs
-- [ ] `P1-35` Gate log monthly partitioning
-- [ ] `P1-36` Offline sync endpoint for the guard app
+- [x] `P1-27` **`VisitPass`** with a hashed, fixed-time-compared gate code and a 5-attempt cap
+- [x] `P1-28` **Resident pre-approval** — blacklist checked at issue, window capped at 24h
+- [x] `P1-29` **Check-in / check-out** — one visit per pass; both ends tracked, never inferred
+- [x] `P1-30` **Walk-up delivery and cab entry**, with left-at-gate modelled explicitly
+- [x] `P1-31` **Daily help attendance** — badge punch, monthly sheet on society-local dates
+- [x] `P1-32` **Blacklist** — mandatory reason, named author, forced review date
+- [x] `P1-33` **SOS** on the Critical lane, with time-to-acknowledge recorded
+- [x] `P1-34` **Visitor photos** — private container, short-lived SAS, society-checked keys
+- [x] `P1-35` **Gate log partitioning** — `yyyyMM` stamped at capture, leading the index
+- [x] `P1-36` **Offline sync** — device-generated ids dedupe; capture time preserved
 
 ### Helpdesk service
 - [ ] `P1-37` `Complaint` aggregate and ticket numbering

@@ -33,6 +33,13 @@ public class Result
 
     public static Result Failure(Error error) => new(false, error);
 
+    /// <summary>
+    /// Lets a method returning <see cref="Result"/> write <c>return someError;</c>, matching
+    /// what <see cref="Result{TValue}"/> already allows. Without it the two read differently
+    /// for no reason, and the non-generic form collects <c>Result.Failure(...)</c> noise.
+    /// </summary>
+    public static implicit operator Result(Error error) => Failure(error);
+
     public static Result<TValue> Success<TValue>(TValue value) => new(value, true, Error.None);
 
     public static Result<TValue> Failure<TValue>(Error error) => new(default, false, error);
