@@ -19,10 +19,14 @@
   <Folder Name="/src/Services/Identity/">
     <Project Path="src/Services/Identity/SocietyHub.Identity.Api/SocietyHub.Identity.Api.csproj" />
   </Folder>
+  <Folder Name="/src/Services/Society/">
+    <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SocietyHub.Identity.Tests/SocietyHub.Identity.Tests.csproj" />
     <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
     <Project Path="tests/SocietyHub.Platform.Tests/SocietyHub.Platform.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Society.Tests/SocietyHub.Society.Tests.csproj" />
     <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
   </Folder>
 </Solution>

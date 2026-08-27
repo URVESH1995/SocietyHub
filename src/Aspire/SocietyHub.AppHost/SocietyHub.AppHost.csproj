@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Services\Identity\SocietyHub.Identity.Api\SocietyHub.Identity.Api.csproj" />
     <ProjectReference Include="..\..\Gateway\SocietyHub.ApiGateway\SocietyHub.ApiGateway.csproj" />
+    <ProjectReference Include="..\..\Services\Society\SocietyHub.Society.Api\SocietyHub.Society.Api.csproj" />
   </ItemGroup>
 
 </Project>

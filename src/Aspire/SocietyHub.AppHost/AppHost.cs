@@ -46,10 +46,17 @@ var identityApi = builder.AddProject<Projects.SocietyHub_Identity_Api>("identity
                          .WithReference(rabbitmq).WaitFor(rabbitmq)
                          .WithHttpHealthCheck("/health");
 
+var societyApi = builder.AddProject<Projects.SocietyHub_Society_Api>("society-api")
+                        .WithReference(societyDb).WaitFor(societyDb)
+                        .WithReference(redis).WaitFor(redis)
+                        .WithReference(rabbitmq).WaitFor(rabbitmq)
+                        .WithHttpHealthCheck("/health");
+
 // The gateway is the only component with a publicly reachable endpoint. Everything
 // else is reachable solely through service discovery inside the compose network.
 builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
        .WithReference(identityApi).WaitFor(identityApi)
+       .WithReference(societyApi).WaitFor(societyApi)
        .WithReference(redis)
        .WithExternalHttpEndpoints()
        .WithHttpHealthCheck("/health");

@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 19 | 65 | 29% |
+| **1** | Daily operations | 26 | 65 | 40% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **43** | **182** | **24%** |
+| | **Total** | **50** | **182** | **27%** |
 
 ---
 
@@ -147,13 +147,13 @@ region-pluggable residency — genuinely can wait.
 > API arrives, without touching a call site.
 
 ### Society service
-- [ ] `P1-20` Society / Tower / Floor / Flat aggregates
-- [ ] `P1-21` Residents, family members, owner vs tenant
-- [ ] `P1-22` Vehicles and parking slots
-- [ ] `P1-23` Society settings — **default language**, time zone, currency, country
-- [ ] `P1-24` Onboarding — create society, bulk flat import from spreadsheet
-- [ ] `P1-25` Resident directory with privacy controls
-- [ ] `P1-26` Publish `ResidentRegistered`, `FlatOccupancyChanged`
+- [x] `P1-20` **Society / Tower / Flat** — the society is its own tenant row, so one filter covers its profile too
+- [x] `P1-21` **Residents** — owner, tenant, family; occupancy and primary contact both derived
+- [x] `P1-22` **Vehicles and parking** — registrations normalised for the Phase 3 ANPR match
+- [x] `P1-23` **Society settings** — default language, time zone, currency, country
+- [x] `P1-24` **Onboarding** — society creation and forgiving bulk flat import
+- [x] `P1-25` **Directory with privacy controls** — minimum by default, phone is opt-in
+- [x] `P1-26` **`ResidentRegistered` and `FlatOccupancyChanged`** through the outbox, only on real change
 
 ### Gate service
 - [ ] `P1-27` `VisitPass` aggregate with OTP and QR
