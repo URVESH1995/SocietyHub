@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 36 | 65 | 55% |
+| **1** | Daily operations | 43 | 65 | 66% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **60** | **182** | **33%** |
+| | **Total** | **67** | **182** | **37%** |
 
 ---
 
@@ -168,13 +168,13 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-36` **Offline sync** — device-generated ids dedupe; capture time preserved
 
 ### Helpdesk service
-- [ ] `P1-37` `Complaint` aggregate and ticket numbering
-- [ ] `P1-38` Categories and priority → SLA due date in **society-local time**
-- [ ] `P1-39` Assignment and status workflow
-- [ ] `P1-40` SLA sweeper background service
-- [ ] `P1-41` Escalation matrix to committee on breach
-- [ ] `P1-42` Resident rating on close
-- [ ] `P1-43` Photo and document attachments
+- [x] `P1-37` **`Complaint` aggregate** with gapless per-society ticket numbering
+- [x] `P1-38` **SLA on working hours** in society-local time; urgent categories auto-escalate
+- [x] `P1-39` **Assignment and status workflow** — assign, start, resolve, close, reopen, reject
+- [x] `P1-40` **SLA sweeper** — batched, cooldown-limited, longest-overdue first
+- [x] `P1-41` **Escalation matrix** — assignee, admin, committee; level 3 gets a faster lane
+- [x] `P1-42` **Rating on close** — only the resident who raised it may close
+- [x] `P1-43` **Notes and attachments**, with internal-only notes separated from resident-visible
 
 ### Notification service
 - [ ] `P1-44` Template store, `en-IN` and `hi-IN`
