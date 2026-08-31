@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 56 | 65 | 86% |
+| **1** | Daily operations | 59 | 65 | 91% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **80** | **182** | **44%** |
+| | **Total** | **83** | **182** | **46%** |
 
 ---
 
@@ -197,9 +197,9 @@ region-pluggable residency — genuinely can wait.
 - [ ] `P1-57` Localisation resources and in-app language switcher
 
 ### Testing and CI
-- [ ] `P1-58` Testcontainers integration harness (SQL Server + RabbitMQ + Redis)
-- [ ] `P1-59` Contract tests for integration events
-- [ ] `P1-60` CI pipeline — build, test, tenancy gate as a required check
+- [x] `P1-58` **Testcontainers harness** — real SQL Server, RabbitMQ and Redis; skips without Docker
+- [x] `P1-59` **Contract tests** for every integration event — shape, JSON round trip, uniqueness
+- [x] `P1-60` **CI pipeline** — build with `-warnaserror`, plus a separate tenancy gate
 
 ### Shipping over years — required for yearly feature releases
 - [x] `P1-61` **`IFeatureGate`** — society override beats plan, Redis-cached, baseline on outage

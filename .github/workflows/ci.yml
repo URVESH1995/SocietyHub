@@ -1,0 +1,109 @@
+name: CI
+
+# Two jobs, deliberately split.
+#
+# `build-and-test` is the fast one: it must finish in a couple of minutes so people actually
+# wait for it. `tenancy-gate` is separate because it is the check that must never be waved
+# through — a tenant isolation regression leaks one society's data to another, and that is the
+# one failure this platform cannot recover from with an apology.
+#
+# Both are required to merge. Separating them means a flaky container start in the integration
+# job can never be confused with a real isolation failure, and the branch protection rule for
+# the gate can be strict without making every unrelated hiccup unmergeable.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore SocietyHub.slnx
+
+      - name: Build
+        # Warnings as errors here and not in the local build. Locally a warning is a note to
+        # come back to; on the way to master it is a thing nobody will come back to.
+        run: dotnet build SocietyHub.slnx --no-restore -c Release -warnaserror
+
+      - name: Unit tests
+        # Everything except the container suite, which the tenancy-gate job owns. Running it
+        # twice would double the slowest part of the pipeline for no extra signal.
+        run: >
+          dotnet test SocietyHub.slnx
+          --no-build -c Release
+          --filter "FullyQualifiedName!~IntegrationTests"
+          --logger "trx;LogFileName=unit.trx"
+          --results-directory artifacts/test-results
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: artifacts/test-results
+
+  tenancy-gate:
+    name: Tenant isolation gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore SocietyHub.slnx
+
+      - name: Build
+        run: dotnet build SocietyHub.slnx --no-restore -c Release
+
+      - name: Tenancy suite
+        # The five layers, against SQLite and in memory. Fast, and it catches the mistakes
+        # that are mistakes regardless of database engine.
+        run: >
+          dotnet test tests/SocietyHub.Tenancy.Tests
+          --no-build -c Release
+          --logger "trx;LogFileName=tenancy.trx"
+          --results-directory artifacts/test-results
+
+      - name: Integration suite
+        env:
+          # Turns a missing Docker daemon into a failure instead of a skip. On a developer's
+          # laptop skipping is right; here it would let the whole integration suite quietly
+          # stop running while the pipeline stayed green — which is worse than not having it.
+          SOCIETYHUB_REQUIRE_DOCKER: "1"
+        run: >
+          dotnet test tests/SocietyHub.IntegrationTests
+          --no-build -c Release
+          --logger "trx;LogFileName=integration.trx"
+          --results-directory artifacts/test-results
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tenancy-gate-results
+          path: artifacts/test-results

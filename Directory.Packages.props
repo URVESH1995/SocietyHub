@@ -49,6 +49,16 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="4.6.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
+
+    <!-- Transitive, via Testcontainers' support for a remote Docker host over SSH. The version
+         it resolves to (2024.2.0) carries a high-severity advisory, GHSA-q939-rpr3-3284. Test
+         infrastructure never ships, but a known-vulnerable package in the tree trains people
+         to ignore the scanner, and transitive pinning makes the fix one line. -->
+    <PackageVersion Include="SSH.NET" Version="2026.0.0" />
   </ItemGroup>
   <ItemGroup Label="OpenTelemetry">
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />

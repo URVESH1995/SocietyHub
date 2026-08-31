@@ -40,6 +40,7 @@
     <Project Path="tests/SocietyHub.Gate.Tests/SocietyHub.Gate.Tests.csproj" />
     <Project Path="tests/SocietyHub.Helpdesk.Tests/SocietyHub.Helpdesk.Tests.csproj" />
     <Project Path="tests/SocietyHub.Identity.Tests/SocietyHub.Identity.Tests.csproj" />
+    <Project Path="tests/SocietyHub.IntegrationTests/SocietyHub.IntegrationTests.csproj" />
     <Project Path="tests/SocietyHub.Notice.Tests/SocietyHub.Notice.Tests.csproj" />
     <Project Path="tests/SocietyHub.Notification.Tests/SocietyHub.Notification.Tests.csproj" />
     <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
