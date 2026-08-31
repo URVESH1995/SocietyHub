@@ -37,6 +37,17 @@ public static class ResultExtensions
     /// English and Hindi — must localise it. <c>detail</c> carries the English description for
     /// logs and developers, and is never what a resident sees.
     /// </summary>
+    /// <summary>
+    /// Renders an error directly, for the checks a handler makes before it has a
+    /// <see cref="Result"/> to fail — an entity that was not found, or a caller who owns the
+    /// row but not the right to change it.
+    ///
+    /// An overload rather than relying on the implicit <c>Error</c> to <c>Result</c>
+    /// conversion, because C# does not apply user-defined conversions when resolving extension
+    /// methods, so <c>error.ToProblem()</c> would not compile without it.
+    /// </summary>
+    public static IResult ToProblem(this Error error) => Result.Failure(error).ToProblem();
+
     public static IResult ToProblem(this Result result)
     {
         if (result.IsSuccess)

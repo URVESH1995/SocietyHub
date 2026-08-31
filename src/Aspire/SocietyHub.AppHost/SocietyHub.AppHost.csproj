@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\Services\Gate\SocietyHub.Gate.Api\SocietyHub.Gate.Api.csproj" />
     <ProjectReference Include="..\..\Services\Helpdesk\SocietyHub.Helpdesk.Api\SocietyHub.Helpdesk.Api.csproj" />
     <ProjectReference Include="..\..\Services\Notification\SocietyHub.Notification.Api\SocietyHub.Notification.Api.csproj" />
+    <ProjectReference Include="..\..\Services\Notice\SocietyHub.Notice.Api\SocietyHub.Notice.Api.csproj" />
   </ItemGroup>
 
 </Project>

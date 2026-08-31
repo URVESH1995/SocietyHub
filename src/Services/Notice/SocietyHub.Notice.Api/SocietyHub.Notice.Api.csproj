@@ -6,7 +6,6 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Persistence\SocietyHub.Persistence.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Messaging\SocietyHub.Messaging.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Caching\SocietyHub.Caching.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Contracts\SocietyHub.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

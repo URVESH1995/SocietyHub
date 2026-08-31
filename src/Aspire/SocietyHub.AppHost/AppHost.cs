@@ -23,6 +23,7 @@ var societyDb = sql.AddDatabase("societydb");
 var gateDb = sql.AddDatabase("gatedb");
 var helpdeskDb = sql.AddDatabase("helpdeskdb");
 var notificationDb = sql.AddDatabase("notificationdb");
+var noticeDb = sql.AddDatabase("noticedb");
 
 // Shared cache: society master data, visitor OTP codes, idempotency keys and the
 // distributed locks that keep bulk-service quorum counting correct in Phase 2.
@@ -70,6 +71,12 @@ var notificationApi = builder.AddProject<Projects.SocietyHub_Notification_Api>("
                              .WithReference(rabbitmq).WaitFor(rabbitmq)
                              .WithHttpHealthCheck("/health");
 
+var noticeApi = builder.AddProject<Projects.SocietyHub_Notice_Api>("notice-api")
+                       .WithReference(noticeDb).WaitFor(noticeDb)
+                       .WithReference(redis).WaitFor(redis)
+                       .WithReference(rabbitmq).WaitFor(rabbitmq)
+                       .WithHttpHealthCheck("/health");
+
 // The gateway is the only component with a publicly reachable endpoint. Everything
 // else is reachable solely through service discovery inside the compose network.
 builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
@@ -78,6 +85,7 @@ builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
        .WithReference(gateApi).WaitFor(gateApi)
        .WithReference(helpdeskApi).WaitFor(helpdeskApi)
        .WithReference(notificationApi).WaitFor(notificationApi)
+       .WithReference(noticeApi).WaitFor(noticeApi)
        .WithReference(redis)
        .WithExternalHttpEndpoints()
        .WithHttpHealthCheck("/health");

@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 49 | 65 | 75% |
+| **1** | Daily operations | 51 | 65 | 78% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **73** | **182** | **40%** |
+| | **Total** | **75** | **182** | **41%** |
 
 ---
 
@@ -185,8 +185,8 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-49` **Per-user preferences** and opt-out, which Critical overrides
 
 ### Notice service
-- [ ] `P1-50` Notice board, targeting by tower or flat
-- [ ] `P1-51` Polls and voting
+- [x] `P1-50` **Notice board** with targeting by tower, flat or committee, and read receipts
+- [x] `P1-51` **Polls and voting** — one vote per flat, frozen quorum, sealed resolutions
 
 ### Client applications
 - [ ] `P1-52` Shared Razor class library — components and view models

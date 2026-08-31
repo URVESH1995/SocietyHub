@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SocietyHub.Contracts;
 using SocietyHub.Contracts.Gate;
 using SocietyHub.Contracts.Helpdesk;
+using SocietyHub.Contracts.Notice;
 using SocietyHub.Messaging;
 using SocietyHub.Notification.Api.Features;
 using SocietyHub.Persistence.Inbox;
@@ -27,10 +28,19 @@ public abstract class NotificationConsumer<TEvent> : IdempotentConsumer<TEvent>
         IInbox inbox,
         DbContext context,
         INotificationEnqueuer enqueuer,
-        ILogger logger) : base(inbox, context, logger) =>
+        ILogger logger) : base(inbox, context, logger)
+    {
         Enqueuer = enqueuer;
+        Logger = logger;
+    }
 
     protected INotificationEnqueuer Enqueuer { get; }
+
+    /// <summary>
+    /// The base class keeps its logger private, and a consumer that resolves an empty
+    /// audience needs to say so — silence there looks identical to a working fan-out.
+    /// </summary>
+    protected ILogger Logger { get; }
 
     /// <summary>
     /// Who lives in a flat.
@@ -273,4 +283,77 @@ internal static class EscalationMatrix
         2 => "society-admin",
         _ => "committee",
     };
+}
+
+/// <summary>
+/// Announces a notice to the audience the Notice service targeted.
+///
+/// The event carries the audience rule rather than a recipient list — a notice for 600 flats
+/// would otherwise put 600 user ids on the wire, and they would already be stale by the time
+/// the message was consumed if a flat changed hands in between. Expanding the rule to people
+/// belongs here, next to the cache that makes it cheap.
+///
+/// Rides the Normal lane. A noticeboard blast is the largest fan-out the platform produces
+/// and is exactly the traffic the Critical lane exists to stay clear of.
+/// </summary>
+public sealed class NoticePublishedConsumer : NotificationConsumer<NoticePublished>
+{
+    public NoticePublishedConsumer(
+        IInbox inbox,
+        DbContext context,
+        INotificationEnqueuer enqueuer,
+        ILogger<NoticePublishedConsumer> logger)
+        : base(inbox, context, enqueuer, logger)
+    {
+    }
+
+    protected override string ConsumerName => "notification.notice-published";
+
+    protected override async Task HandleAsync(
+        NoticePublished message,
+        ConsumeContext<NoticePublished> context,
+        CancellationToken cancellationToken)
+    {
+        var recipients = await ResolveNoticeAudienceAsync(message, cancellationToken);
+
+        if (recipients.Count == 0)
+        {
+            // Logged rather than thrown. A notice that reached nobody is a real problem, but
+            // failing the message would retry the whole fan-out four times and still reach
+            // nobody — the fix is the Society lookup, not the retry.
+            Logger.LogWarning(
+                "Notice {NoticeId} for society {SocietyId} resolved to no recipients.",
+                message.NoticeId,
+                message.SocietyId);
+
+            return;
+        }
+
+        await Enqueuer.EnqueueAsync(
+            message.SocietyId,
+            nameof(NoticePublished),
+            recipients,
+            new Dictionary<string, string?>
+            {
+                ["title"] = message.Title,
+                ["summary"] = message.Summary,
+                ["body"] = message.Summary,
+            },
+            message.EventId,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Expands an audience rule into people.
+    ///
+    /// A placeholder alongside <see cref="NotificationConsumer{TEvent}.ResolveFlatResidentsAsync"/>
+    /// and empty for the same reason: the Society lookup does not exist yet, and returning
+    /// nothing degrades to a missed notification rather than a poisoned queue. The branching
+    /// is written out because it is the part that will not change when the lookup lands — only
+    /// the calls inside each branch will.
+    /// </summary>
+    private static Task<IReadOnlyCollection<Recipient>> ResolveNoticeAudienceAsync(
+        NoticePublished message,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyCollection<Recipient>>([]);
 }

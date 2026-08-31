@@ -62,6 +62,7 @@ builder.Services.AddSocietyHubMessaging(builder.Configuration, "notification", m
     messaging.AddConsumer<ComplaintRaisedConsumer>(MessageLane.Normal);
     messaging.AddConsumer<ComplaintResolvedConsumer>(MessageLane.Normal);
     messaging.AddConsumer<ComplaintSlaBreachedConsumer>(MessageLane.Normal);
+    messaging.AddConsumer<NoticePublishedConsumer>(MessageLane.Normal);
 });
 
 builder.Services.AddScoped<OutboxDispatcher>();
