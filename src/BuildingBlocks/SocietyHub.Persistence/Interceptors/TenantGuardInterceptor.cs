@@ -63,10 +63,26 @@ public sealed class TenantGuardInterceptor : SaveChangesInterceptor
 
         foreach (var entry in context.ChangeTracker.Entries<ITenantScoped>())
         {
+            // The society aggregate is its own tenant: its SocietyId is a computed `=> Id`
+            // with no mapped column, so there is nothing to stamp and nothing to rewrite.
+            // Its tenancy is intrinsic and set at construction, which is a different problem
+            // from the one this interceptor exists to solve.
+            var isIntrinsicallyScoped =
+                entry.Metadata.FindProperty(SocietyIdProperty) is null;
+
             switch (entry.State)
             {
+                case EntityState.Added when isIntrinsicallyScoped:
+                    RejectIntrinsicMismatch(entry, currentSocietyId);
+                    break;
+
                 case EntityState.Added:
                     StampOrReject(entry, currentSocietyId);
+                    break;
+
+                case EntityState.Modified when isIntrinsicallyScoped:
+                case EntityState.Deleted when isIntrinsicallyScoped:
+                    RejectIntrinsicMismatch(entry, currentSocietyId);
                     break;
 
                 case EntityState.Modified:
@@ -79,6 +95,32 @@ public sealed class TenantGuardInterceptor : SaveChangesInterceptor
                 default:
                     break;
             }
+        }
+    }
+
+    /// <summary>
+    /// Checks an entity whose tenancy is intrinsic rather than stored — currently only the
+    /// society aggregate, whose <c>SocietyId</c> is its own <c>Id</c>.
+    ///
+    /// There is nothing to stamp: the value came from the constructor and cannot be rewritten.
+    /// So this only refuses the case that matters, a request scoped to one society touching
+    /// another society's row. A request with no tenant at all is allowed through, because
+    /// creating a society necessarily happens before any tenant exists — and that path is
+    /// reachable only from onboarding, which sits behind a platform-scope policy.
+    /// </summary>
+    private static void RejectIntrinsicMismatch(
+        Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ITenantScoped> entry,
+        Guid? currentSocietyId)
+    {
+        if (currentSocietyId is null)
+        {
+            return;
+        }
+
+        if (entry.Entity.SocietyId != currentSocietyId)
+        {
+            throw new TenantIsolationViolationException(
+                entry.Metadata.DisplayName(), entry.Entity.SocietyId, currentSocietyId);
         }
     }
 

@@ -25,6 +25,9 @@
   <Folder Name="/src/Services/Identity/">
     <Project Path="src/Services/Identity/SocietyHub.Identity.Api/SocietyHub.Identity.Api.csproj" />
   </Folder>
+  <Folder Name="/src/Services/Notification/">
+    <Project Path="src/Services/Notification/SocietyHub.Notification.Api/SocietyHub.Notification.Api.csproj" />
+  </Folder>
   <Folder Name="/src/Services/Society/">
     <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
   </Folder>
@@ -32,6 +35,7 @@
     <Project Path="tests/SocietyHub.Gate.Tests/SocietyHub.Gate.Tests.csproj" />
     <Project Path="tests/SocietyHub.Helpdesk.Tests/SocietyHub.Helpdesk.Tests.csproj" />
     <Project Path="tests/SocietyHub.Identity.Tests/SocietyHub.Identity.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Notification.Tests/SocietyHub.Notification.Tests.csproj" />
     <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
     <Project Path="tests/SocietyHub.Platform.Tests/SocietyHub.Platform.Tests.csproj" />
     <Project Path="tests/SocietyHub.Society.Tests/SocietyHub.Society.Tests.csproj" />

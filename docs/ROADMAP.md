@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 43 | 65 | 66% |
+| **1** | Daily operations | 49 | 65 | 75% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **67** | **182** | **37%** |
+| | **Total** | **73** | **182** | **40%** |
 
 ---
 
@@ -177,12 +177,12 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-43` **Notes and attachments**, with internal-only notes separated from resident-visible
 
 ### Notification service
-- [ ] `P1-44` Template store, `en-IN` and `hi-IN`
-- [ ] `P1-45` Channel providers — push, SMS, email, WhatsApp behind one abstraction
-- [ ] `P1-46` Consumers for every Phase 1 event
-- [ ] `P1-47` Priority lanes and quiet hours in society-local time
-- [ ] `P1-48` Delivery log with retry and dead-letter
-- [ ] `P1-49` Per-user notification preferences and opt-out
+- [x] `P1-44` **Template store** in `en-IN` and `hi-IN`, complete in both by test
+- [x] `P1-45` **Channel providers** behind one abstraction — push, SMS, email, in-app
+- [x] `P1-46` **Consumers** for the gate, SOS and complaint events, on their lanes
+- [x] `P1-47` **Priority lanes and quiet hours** in society-local time; Critical never held
+- [x] `P1-48` **Delivery log** with exponential backoff and dead-lettering
+- [x] `P1-49` **Per-user preferences** and opt-out, which Critical overrides
 
 ### Notice service
 - [ ] `P1-50` Notice board, targeting by tower or flat
