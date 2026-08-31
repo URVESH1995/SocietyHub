@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using SocietyHub.Features;
 using SocietyHub.Identity.Api.Domain;
 using SocietyHub.Identity.Api.Features;
 using SocietyHub.Identity.Api.Features.Devices;
@@ -108,6 +109,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSocietyHubPlatform();
 app.MapDefaultEndpoints();
+app.MapFeatureEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

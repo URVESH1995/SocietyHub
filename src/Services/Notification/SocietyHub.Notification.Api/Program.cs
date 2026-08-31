@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using SocietyHub.Features;
 using SocietyHub.Messaging;
 using SocietyHub.Notification.Api.Channels;
 using SocietyHub.Notification.Api.Consumers;
@@ -99,6 +100,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSocietyHubPlatform();
 app.MapDefaultEndpoints();
+app.MapFeatureEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

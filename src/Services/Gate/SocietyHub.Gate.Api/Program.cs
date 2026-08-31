@@ -2,6 +2,7 @@ using System.Reflection;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using SocietyHub.Features;
 using SocietyHub.Gate.Api.Features;
 using SocietyHub.Gate.Api.Persistence;
 using SocietyHub.Persistence.Inbox;
@@ -86,6 +87,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSocietyHubPlatform();
 app.MapDefaultEndpoints();
+app.MapFeatureEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

@@ -6,6 +6,7 @@
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/SocietyHub.Caching/SocietyHub.Caching.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Contracts/SocietyHub.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/SocietyHub.Features/SocietyHub.Features.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Messaging/SocietyHub.Messaging.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Persistence/SocietyHub.Persistence.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.ServiceDefaults/SocietyHub.ServiceDefaults.csproj" />
@@ -35,6 +36,7 @@
     <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SocietyHub.Features.Tests/SocietyHub.Features.Tests.csproj" />
     <Project Path="tests/SocietyHub.Gate.Tests/SocietyHub.Gate.Tests.csproj" />
     <Project Path="tests/SocietyHub.Helpdesk.Tests/SocietyHub.Helpdesk.Tests.csproj" />
     <Project Path="tests/SocietyHub.Identity.Tests/SocietyHub.Identity.Tests.csproj" />

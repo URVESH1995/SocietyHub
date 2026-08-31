@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocietyHub.Society.Api.Persistence;
 
@@ -11,9 +12,11 @@ using SocietyHub.Society.Api.Persistence;
 namespace SocietyHub.Society.Api.Persistence.Migrations
 {
     [DbContext(typeof(SocietyDbContext))]
-    partial class SocietyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831180908_AddEntitlements")]
+    partial class AddEntitlements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

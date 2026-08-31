@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using SocietyHub.Features;
 using SocietyHub.Helpdesk.Api.Features;
 using SocietyHub.Helpdesk.Api.Persistence;
 using SocietyHub.Persistence.Inbox;
@@ -77,6 +78,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSocietyHubPlatform();
 app.MapDefaultEndpoints();
+app.MapFeatureEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

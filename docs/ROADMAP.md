@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 51 | 65 | 78% |
+| **1** | Daily operations | 56 | 65 | 86% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **75** | **182** | **41%** |
+| | **Total** | **80** | **182** | **44%** |
 
 ---
 
@@ -202,11 +202,11 @@ region-pluggable residency — genuinely can wait.
 - [ ] `P1-60` CI pipeline — build, test, tenancy gate as a required check
 
 ### Shipping over years — required for yearly feature releases
-- [ ] `P1-61` `IFeatureGate` implementation with per-society overrides, Redis-cached
-- [ ] `P1-62` Subscription plans — Basic / Standard / Premium mapped to feature sets
-- [ ] `P1-63` Canary rollout — enable a feature for N societies, watch, then widen
-- [ ] `P1-64` `/features` endpoint so clients hide what a society does not have
-- [ ] `P1-65` API versioning strategy, with a deprecation policy for old mobile builds
+- [x] `P1-61` **`IFeatureGate`** — society override beats plan, Redis-cached, baseline on outage
+- [x] `P1-62` **Subscription plans** — Basic / Standard / Premium, with a lapse path
+- [x] `P1-63` **Canary rollout** — pilot by name, then a stable hashed percentage, then all
+- [x] `P1-64` **`/api/features`** manifest so clients hide what a society does not have
+- [x] `P1-65` **API versioning** at the gateway, plus a client-build deprecation gate
 
 ---
 

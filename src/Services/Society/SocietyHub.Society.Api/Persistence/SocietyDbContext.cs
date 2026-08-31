@@ -4,6 +4,7 @@ using SocietyHub.Persistence.Inbox;
 using SocietyHub.Persistence.Outbox;
 using SocietyHub.SharedKernel.Abstractions;
 using SocietyHub.Society.Api.Domain;
+using SocietyHub.Society.Api.Features.Entitlements;
 
 namespace SocietyHub.Society.Api.Persistence;
 
@@ -39,6 +40,16 @@ public sealed class SocietyDbContext : TenantDbContext
 
     public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
+    /// <summary>
+    /// Subscriptions and rollout waves are platform data, not society data — deliberately not
+    /// <c>ITenantScoped</c>. A tenant filter here would mean a society could only read its own
+    /// entitlements, which is exactly backwards: only a platform operator may read or write
+    /// them at all, and that is enforced by the authorisation policy on the endpoints.
+    /// </summary>
+    public DbSet<SocietySubscription> Subscriptions => Set<SocietySubscription>();
+
+    public DbSet<FeatureRolloutRecord> FeatureRollouts => Set<FeatureRolloutRecord>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new OutboxMessageConfiguration());
@@ -50,6 +61,7 @@ public sealed class SocietyDbContext : TenantDbContext
         ConfigureResidents(builder);
         ConfigureVehicles(builder);
         ConfigureParkingSlots(builder);
+        ConfigureEntitlements(builder);
 
         // Applies the tenant filters last, after every entity is known to the model.
         // The society is its own tenant: its SocietyId is a computed `=> Id`, which EF cannot
@@ -209,6 +221,35 @@ public sealed class SocietyDbContext : TenantDbContext
             slot.HasIndex(p => new { p.SocietyId, p.SlotNumber })
                 .IsUnique()
                 .HasDatabaseName("IX_ParkingSlots_Society_Number");
+        });
+    }
+    private static void ConfigureEntitlements(ModelBuilder builder)
+    {
+        builder.Entity<SocietySubscription>(subscription =>
+        {
+            subscription.ToTable("society_subscriptions");
+            subscription.HasKey(s => s.Id);
+            subscription.Property(s => s.Plan).HasConversion<int>();
+            subscription.Property(s => s.EnabledKeys).HasMaxLength(2000);
+            subscription.Property(s => s.DisabledKeys).HasMaxLength(2000);
+            subscription.Property(s => s.LastChangeReason).HasMaxLength(500);
+
+            subscription.HasIndex(s => s.SocietyId)
+                        .IsUnique()
+                        .HasDatabaseName("UX_Subscriptions_Society");
+        });
+
+        builder.Entity<FeatureRolloutRecord>(rollout =>
+        {
+            rollout.ToTable("feature_rollouts");
+            rollout.HasKey(r => r.Id);
+            rollout.Property(r => r.FeatureKey).HasMaxLength(100).IsRequired();
+            rollout.Property(r => r.Stage).HasConversion<int>();
+            rollout.Property(r => r.PilotSocietyIds).HasMaxLength(4000);
+
+            rollout.HasIndex(r => r.FeatureKey)
+                   .IsUnique()
+                   .HasDatabaseName("UX_Rollouts_Feature");
         });
     }
 }

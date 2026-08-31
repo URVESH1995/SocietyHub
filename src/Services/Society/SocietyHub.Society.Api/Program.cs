@@ -1,11 +1,13 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using SocietyHub.Features;
 using SocietyHub.Persistence.Inbox;
 using SocietyHub.Persistence.Interceptors;
 using SocietyHub.Persistence.Outbox;
 using SocietyHub.Messaging;
 using SocietyHub.Society.Api.Features;
+using SocietyHub.Society.Api.Features.Entitlements;
 using SocietyHub.Society.Api.Persistence;
 using SocietyHub.Web;
 
@@ -20,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddRedisClient(connectionName: "redis");
 builder.AddRabbitMQClient(connectionName: "rabbitmq");
+
+builder.Services.AddScoped<IEntitlementSource, DatabaseEntitlementSource>();
 
 builder.Services.AddSocietyHubPlatform(builder.Configuration, Assembly.GetExecutingAssembly());
 
@@ -73,6 +77,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseSocietyHubPlatform();
 app.MapDefaultEndpoints();
+app.MapFeatureEndpoints();
+app.MapEntitlementEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

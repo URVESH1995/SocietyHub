@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SocietyHub.SharedKernel\SocietyHub.SharedKernel.csproj" />
     <ProjectReference Include="..\SocietyHub.Caching\SocietyHub.Caching.csproj" />
+    <ProjectReference Include="..\SocietyHub.Features\SocietyHub.Features.csproj" />
   </ItemGroup>
 
   <ItemGroup>
