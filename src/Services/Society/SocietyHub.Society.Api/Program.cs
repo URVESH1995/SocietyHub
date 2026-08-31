@@ -4,6 +4,7 @@ using Scalar.AspNetCore;
 using SocietyHub.Persistence.Inbox;
 using SocietyHub.Persistence.Interceptors;
 using SocietyHub.Persistence.Outbox;
+using SocietyHub.Messaging;
 using SocietyHub.Society.Api.Features;
 using SocietyHub.Society.Api.Persistence;
 using SocietyHub.Web;
@@ -42,6 +43,11 @@ builder.EnrichSqlServerDbContext<SocietyDbContext>();
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<SocietyDbContext>());
 builder.Services.AddScoped<IOutbox, EfOutbox>();
 builder.Services.AddScoped<IInbox, EfInbox>();
+// Registers MassTransit over RabbitMQ and, with it, the IIntegrationEventPublisher the
+// outbox dispatcher depends on. No consumers yet, so no receive endpoints are created —
+// this service publishes but does not yet subscribe.
+builder.Services.AddSocietyHubMessaging(builder.Configuration, "society");
+
 builder.Services.AddScoped<OutboxDispatcher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.Configure<OutboxOptions>(builder.Configuration.GetSection("Outbox"));
@@ -56,7 +62,13 @@ if (app.Environment.IsDevelopment())
     // replicas starting together would race, and migrating on boot is how an unreviewed
     // schema change reaches production.
     await using var scope = app.Services.CreateAsyncScope();
-    await scope.ServiceProvider.GetRequiredService<SocietyDbContext>().Database.MigrateAsync();
+    var seedContext = scope.ServiceProvider.GetRequiredService<SocietyDbContext>();
+    await seedContext.Database.MigrateAsync();
+
+    // Matches the demo users Identity seeds, so the flats their memberships point at exist.
+    await DevelopmentSeed.SeedAsync(
+        seedContext,
+        scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed"));
 }
 
 app.UseSocietyHubPlatform();

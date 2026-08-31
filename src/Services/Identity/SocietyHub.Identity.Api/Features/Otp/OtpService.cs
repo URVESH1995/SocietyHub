@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SocietyHub.Caching;
 using SocietyHub.Identity.Api.Domain;
@@ -9,8 +10,18 @@ using StackExchange.Redis;
 
 namespace SocietyHub.Identity.Api.Features.Otp;
 
-/// <summary>What a caller may know after requesting a code.</summary>
-public sealed record OtpRequestResult(DateTimeOffset ExpiresAtUtc, int CodeLength);
+/// <summary>
+/// What a caller may know after requesting a code.
+///
+/// <paramref name="DevelopmentCode"/> is populated <b>only</b> outside production, so the
+/// flow can be exercised with curl without an SMS provider. Returning a live credential in
+/// the response is indefensible anywhere real, which is why it is gated on the environment
+/// rather than a config flag somebody could set by accident.
+/// </summary>
+public sealed record OtpRequestResult(
+    DateTimeOffset ExpiresAtUtc,
+    int CodeLength,
+    string? DevelopmentCode = null);
 
 /// <summary>Which societies a verified phone belongs to.</summary>
 public sealed record VerifiedIdentity(
@@ -61,14 +72,17 @@ public sealed class OtpService : IOtpService
     private readonly SocietyHubIdentityDbContext _context;
     private readonly IConnectionMultiplexer _redis;
     private readonly TimeProvider _timeProvider;
+    private readonly IHostEnvironment _environment;
     private readonly ILogger<OtpService> _logger;
 
     public OtpService(
         SocietyHubIdentityDbContext context,
         IConnectionMultiplexer redis,
         TimeProvider timeProvider,
+        IHostEnvironment environment,
         ILogger<OtpService> logger)
     {
+        _environment = environment;
         _context = context;
         _redis = redis;
         _timeProvider = timeProvider;
@@ -121,7 +135,10 @@ public sealed class OtpService : IOtpService
         // an OTP in a production log is a credential in a log.
         _logger.LogDebug("OTP {Code} issued for {Phone}.", code, phone.ToMasked());
 
-        return new OtpRequestResult(challenge.ExpiresAtUtc, OtpChallenge.CodeLength);
+        return new OtpRequestResult(
+            challenge.ExpiresAtUtc,
+            OtpChallenge.CodeLength,
+            _environment.IsProduction() ? null : code);
     }
 
     public async Task<Result<VerifiedIdentity>> VerifyAsync(

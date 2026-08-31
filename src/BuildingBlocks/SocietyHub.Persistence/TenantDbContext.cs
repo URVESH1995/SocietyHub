@@ -62,6 +62,29 @@ public abstract class TenantDbContext : DbContext
 
             if (typeof(ITenantScoped).IsAssignableFrom(clrType))
             {
+                // Already configured by the deriving context. The society aggregate is the
+                // case that needs this: it is its own tenant, so its SocietyId is a computed
+                // `=> Id` that EF cannot map, and it declares a filter on Id instead.
+                var alreadyFiltered = entityType
+                    .GetDeclaredQueryFilters()
+                    .Any(filter => filter.Key == TenantFilterName);
+
+                if (alreadyFiltered)
+                {
+                    continue;
+                }
+
+                // Fail loudly rather than skip. A tenant-scoped entity whose SocietyId is not
+                // a mapped column cannot be filtered by the convention, and silently leaving it
+                // unfiltered would be a cross-society leak that nothing else catches.
+                if (entityType.FindProperty(nameof(ITenantScoped.SocietyId)) is null)
+                {
+                    throw new InvalidOperationException(
+                        $"'{clrType.Name}' is ITenantScoped but has no mapped SocietyId column. " +
+                        $"Map it, or declare a '{TenantFilterName}' query filter for the type " +
+                        "before calling base.OnModelCreating.");
+                }
+
                 ConfigureTenantFilterMethod
                     .MakeGenericMethod(clrType)
                     .Invoke(this, [modelBuilder]);

@@ -6,6 +6,7 @@ using SocietyHub.Helpdesk.Api.Persistence;
 using SocietyHub.Persistence.Inbox;
 using SocietyHub.Persistence.Interceptors;
 using SocietyHub.Persistence.Outbox;
+using SocietyHub.Messaging;
 using SocietyHub.Web;
 
 // SocietyHub Helpdesk service.
@@ -44,6 +45,11 @@ builder.EnrichSqlServerDbContext<HelpdeskDbContext>();
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<HelpdeskDbContext>());
 builder.Services.AddScoped<IOutbox, EfOutbox>();
 builder.Services.AddScoped<IInbox, EfInbox>();
+// Registers MassTransit over RabbitMQ and, with it, the IIntegrationEventPublisher the
+// outbox dispatcher depends on. No consumers yet, so no receive endpoints are created —
+// this service publishes but does not yet subscribe.
+builder.Services.AddSocietyHubMessaging(builder.Configuration, "helpdesk");
+
 builder.Services.AddScoped<OutboxDispatcher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.Configure<OutboxOptions>(builder.Configuration.GetSection("Outbox"));

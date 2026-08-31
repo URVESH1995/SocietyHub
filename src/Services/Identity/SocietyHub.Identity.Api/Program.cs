@@ -12,6 +12,7 @@ using SocietyHub.Identity.Api.Persistence;
 using SocietyHub.Persistence.Inbox;
 using SocietyHub.Persistence.Interceptors;
 using SocietyHub.Persistence.Outbox;
+using SocietyHub.Messaging;
 using SocietyHub.Web;
 
 // SocietyHub Identity service.
@@ -73,6 +74,11 @@ builder.Services.AddScoped<DbContext>(sp =>
 
 builder.Services.AddScoped<IOutbox, EfOutbox>();
 builder.Services.AddScoped<IInbox, EfInbox>();
+// Registers MassTransit over RabbitMQ and, with it, the IIntegrationEventPublisher the
+// outbox dispatcher depends on. No consumers yet, so no receive endpoints are created —
+// this service publishes but does not yet subscribe.
+builder.Services.AddSocietyHubMessaging(builder.Configuration, "identity");
+
 builder.Services.AddScoped<OutboxDispatcher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.Configure<OutboxOptions>(builder.Configuration.GetSection("Outbox"));
@@ -90,9 +96,14 @@ if (app.Environment.IsDevelopment())
     // several replicas starting together would race, and an automatic migration on boot is
     // how an unreviewed schema change reaches production.
     await using var scope = app.Services.CreateAsyncScope();
-    await DatabaseSeeder.MigrateAndSeedAsync(
-        scope.ServiceProvider.GetRequiredService<SocietyHubIdentityDbContext>(),
-        scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed"));
+    var seedContext = scope.ServiceProvider.GetRequiredService<SocietyHubIdentityDbContext>();
+    var seedLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed");
+
+    await DatabaseSeeder.MigrateAndSeedAsync(seedContext, seedLogger);
+
+    // Without this a fresh database is a dead end: every write endpoint needs a token, every
+    // token needs a member, and the only way to create one is a write endpoint.
+    await DevelopmentSeed.SeedAsync(seedContext, seedLogger);
 }
 
 app.UseSocietyHubPlatform();

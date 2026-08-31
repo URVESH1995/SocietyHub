@@ -52,6 +52,19 @@ public sealed class SocietyDbContext : TenantDbContext
         ConfigureParkingSlots(builder);
 
         // Applies the tenant filters last, after every entity is known to the model.
+        // The society is its own tenant: its SocietyId is a computed `=> Id`, which EF cannot
+
+        // map, so the convention in TenantDbContext cannot build a filter for it. Declared here
+
+        // on Id instead, before base runs, which then sees it and leaves it alone.
+
+        builder.Entity<Domain.Society>().Ignore(s => s.SocietyId);
+
+        builder.Entity<Domain.Society>()
+
+               .HasQueryFilter(TenantFilterName, s => s.Id == ActiveSocietyId);
+
+
         base.OnModelCreating(builder);
     }
 

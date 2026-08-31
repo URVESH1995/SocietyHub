@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,19 @@ public sealed class JwtOptions
 
     /// <summary>Development only. Production must use HTTPS metadata.</summary>
     public bool RequireHttpsMetadata { get; set; } = true;
+
+    /// <summary>
+    /// Shared symmetric key, matching what the Identity service signs with.
+    ///
+    /// Present because token issuance is currently a plain signed JWT rather than a full
+    /// OIDC server — there is no discovery document to fetch, so setting
+    /// <see cref="Authority"/> would make every service fail at startup trying to reach one.
+    /// When OpenIddict lands for the public API, this empties out and Authority takes over.
+    ///
+    /// A symmetric key means every service can also <em>mint</em> tokens, not just verify
+    /// them, so it must come from Key Vault in production and never from a config file.
+    /// </summary>
+    public string SigningKey { get; set; } = string.Empty;
 }
 
 public static class AuthenticationExtensions
@@ -44,9 +58,16 @@ public static class AuthenticationExtensions
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(jwt =>
             {
-                jwt.Authority = options.Authority;
                 jwt.Audience = options.Audience;
                 jwt.RequireHttpsMetadata = options.RequireHttpsMetadata;
+
+                // Authority is set only when there is a discovery document to fetch. With a
+                // symmetric key there is not, and setting it would make the service block on
+                // startup trying to reach an endpoint that does not exist.
+                if (string.IsNullOrWhiteSpace(options.SigningKey))
+                {
+                    jwt.Authority = options.Authority;
+                }
 
                 jwt.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -56,6 +77,10 @@ public static class AuthenticationExtensions
                     ValidateIssuerSigningKey = true,
                     ValidAudience = options.Audience,
                     ValidIssuer = options.Authority,
+
+                    IssuerSigningKey = string.IsNullOrWhiteSpace(options.SigningKey)
+                        ? null
+                        : new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.SigningKey)),
 
                     // Default is five minutes, which would keep a ten-minute access token
                     // usable for fifteen. Short tokens are the whole point of pairing them
