@@ -1,0 +1,60 @@
+@*
+    The console's navigation.
+
+    Every entry that depends on a paid feature is wrapped in FeatureView, so a Basic society
+    sees a shorter menu rather than a full one whose extra items all return 402. Shaping only —
+    the server checks again on every request.
+*@
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">SocietyHub</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">@Strings.Nav_Home</NavLink>
+        </div>
+
+        <FeatureView For="@FeatureKey.Complaints">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="complaints">@Strings.Nav_Complaints</NavLink>
+            </div>
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.NoticeBoard">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="notices">@Strings.Nav_Notices</NavLink>
+            </div>
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.CommitteeVoting">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="polls">@Strings.Nav_Polls</NavLink>
+            </div>
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.VisitorManagement">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="visitors">@Strings.Nav_Visitors</NavLink>
+            </div>
+        </FeatureView>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="settings">@Strings.Nav_Settings</NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+}

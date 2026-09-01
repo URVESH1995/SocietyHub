@@ -8,12 +8,12 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 59 | 65 | 91% |
+| **1** | Daily operations | 63 | 65 | 97% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **83** | **182** | **46%** |
+| | **Total** | **87** | **182** | **48%** |
 
 ---
 
@@ -189,12 +189,12 @@ region-pluggable residency — genuinely can wait.
 - [x] `P1-51` **Polls and voting** — one vote per flat, frozen quorum, sealed resolutions
 
 ### Client applications
-- [ ] `P1-52` Shared Razor class library — components and view models
-- [ ] `P1-53` Generated API client SDK from OpenAPI
-- [ ] `P1-54` Resident app — MAUI Blazor Hybrid, iOS and Android
-- [ ] `P1-55` Guard app — Android tablet, offline-capable, camera and QR scan
-- [ ] `P1-56` Admin and committee web — Blazor WASM PWA
-- [ ] `P1-57` Localisation resources and in-app language switcher
+- [x] `P1-52` **Shared Razor class library** — components, view models, API client, offline queue
+- [x] `P1-53` **API client SDK** — hand-written, with an OpenAPI drift-check script (see note)
+- [~] `P1-54` **Resident app** — MAUI Blazor Hybrid, builds for Android; sign-in and push pending
+- [~] `P1-55` **Guard app** — Android tablet with a persisted offline queue; camera/QR pending
+- [x] `P1-56` **Admin and committee web** — Blazor WASM PWA, feature-gated navigation
+- [x] `P1-57` **Localisation** — en-IN and hi-IN resources, parity-tested, native-script switcher
 
 ### Testing and CI
 - [x] `P1-58` **Testcontainers harness** — real SQL Server, RabbitMQ and Redis; skips without Docker

@@ -488,3 +488,6 @@ secrets.json
 
 # Compose secrets
 deploy/compose/.env
+
+# Client build artifacts
+artifacts/

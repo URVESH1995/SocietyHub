@@ -1,0 +1,88 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject SocietyHubApiClient Api
+@inject LanguageService Language
+
+@*
+    The shell.
+
+    Two things happen here and nowhere else: the feature manifest is fetched once and cascaded
+    to every page, and the language is resolved before anything renders. Both are start-up
+    concerns — doing either per page would mean a request per navigation for data that changes
+    a few times a month.
+*@
+
+<CascadingValue Value="_manifest">
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4">
+                <LanguageSwitcher OnChanged="OnLanguageChangedAsync" />
+            </div>
+
+            <article class="content px-4">
+                @if (_loadFailed)
+                {
+                    @*
+                        The console still works with no manifest — it renders the baseline menu
+                        and the server refuses anything the society lacks. Blocking the whole
+                        app on a manifest fetch would make a Redis blip look like an outage.
+                    *@
+                    <div class="alert alert-warning" role="alert">
+                        @Strings.Error_Network
+                        <button class="btn btn-link" @onclick="LoadAsync">@Strings.Common_Retry</button>
+                    </div>
+                }
+
+                @Body
+            </article>
+        </main>
+    </div>
+</CascadingValue>
+
+@code {
+    private FeatureManifestView? _manifest;
+    private bool _loadFailed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Language.LanguageChanged += OnLanguageChanged;
+
+        await Language.InitialiseAsync(societyDefault: null);
+        await LoadAsync();
+    }
+
+    public void Dispose() => Language.LanguageChanged -= OnLanguageChanged;
+
+    private async Task LoadAsync()
+    {
+        _loadFailed = false;
+
+        try
+        {
+            _manifest = await Api.GetFeaturesAsync();
+        }
+        catch (ApiException ex) when (ex.IsUnauthorised)
+        {
+            // Not an error worth showing. The API client has already cleared the session and
+            // raised SessionExpired; the sign-in redirect is on its way.
+            _manifest = null;
+        }
+        catch (Exception)
+        {
+            _loadFailed = true;
+        }
+    }
+
+    private void OnLanguageChanged() => InvokeAsync(StateHasChanged);
+
+    /// <summary>
+    /// Notices and complaint categories arrive already translated by the server, so switching
+    /// language has to refetch rather than only re-render — otherwise the labels change and
+    /// the content stays in the old language.
+    /// </summary>
+    private async Task OnLanguageChangedAsync() => await LoadAsync();
+}

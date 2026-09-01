@@ -1,0 +1,45 @@
+@implements IDisposable
+
+@*
+    Tells a guard what has not reached the server yet.
+
+    The count is the important part. "You are offline" alone leaves someone wondering whether
+    the last four vehicles were recorded; "4 waiting to sync" tells them the tablet still has
+    the work and they do not need the paper register.
+*@
+
+@if (Queue.Depth > 0 || !IsOnline)
+{
+    <div class="sh-offline-banner @(IsOnline ? "is-syncing" : "is-offline")" role="status" aria-live="polite">
+        @if (!IsOnline)
+        {
+            <span class="sh-offline-banner__text">@Strings.Common_Offline</span>
+        }
+
+        @if (Queue.Depth > 0)
+        {
+            <span class="sh-offline-banner__count">
+                @string.Format(Strings.Common_QueuedItems, Queue.Depth)
+            </span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public OfflineQueue Queue { get; set; } = default!;
+
+    /// <summary>
+    /// Supplied by the shell, which owns connectivity detection — the platforms disagree about
+    /// how to ask, and none of them answers reliably. A successful request is the only real
+    /// proof of a connection, so this is a hint for the banner and never a gate on sending.
+    /// </summary>
+    [Parameter]
+    public bool IsOnline { get; set; } = true;
+
+    protected override void OnInitialized() => Queue.DepthChanged += OnDepthChanged;
+
+    public void Dispose() => Queue.DepthChanged -= OnDepthChanged;
+
+    private void OnDepthChanged(int _) => InvokeAsync(StateHasChanged);
+}

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\SocietyHub.SharedKernel\SocietyHub.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <!--
+    Generates a strongly typed `Strings` class from the neutral resx.
+
+    Strongly typed rather than string keys looked up at runtime, because a key that no longer
+    exists must be a build error. The failure mode of the alternative is a blank label in
+    production that nobody notices until a resident asks what the empty button does.
+
+    Only the neutral file generates the class; Strings.hi-IN.resx is picked up by culture
+    fallback at runtime. A test asserts the two files carry the same keys.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\Strings.resx">
+      <Generator>MSBuild:Compile</Generator>
+      <StronglyTypedFileName>$(IntermediateOutputPath)\Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>SocietyHub.Client.Shared.Localization</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
+
+      <!-- Public, because three separate client apps consume it. The generator defaults to
+           internal, which would compile inside the library and fail in every app that uses it. -->
+      <PublicClass>true</PublicClass>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

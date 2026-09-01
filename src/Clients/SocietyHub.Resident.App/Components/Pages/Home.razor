@@ -1,0 +1,161 @@
+@page "/"
+@inject SocietyHubApiClient Api
+@inject LanguageService Language
+
+@*
+    A resident's home screen.
+
+    Ordered by what someone actually opens the app for, most urgent first: a visitor waiting at
+    the gate, then a notice that needs acknowledging, then their open complaints. A resident who
+    has to scroll past a dashboard to approve a visitor standing at a door will stop using the
+    app and tell the guard to phone them instead.
+*@
+
+<div class="sh-home">
+    <header class="sh-home__header">
+        <h1>@Strings.Nav_Home</h1>
+        <LanguageSwitcher OnChanged="LoadAsync" />
+    </header>
+
+    @if (_loading)
+    {
+        <p>@Strings.Common_Loading</p>
+    }
+    else
+    {
+        @if (_error is not null)
+        {
+            <div class="sh-alert" role="alert">
+                @_error
+                <button type="button" @onclick="LoadAsync">@Strings.Common_Retry</button>
+            </div>
+        }
+
+        <FeatureView For="@FeatureKey.VisitorManagement">
+            @if (_expected.Count > 0)
+            {
+                <section class="sh-home__section">
+                    <h2>@Strings.Gate_VisitorAtGate</h2>
+
+                    @foreach (var visitor in _expected)
+                    {
+                        <div class="sh-visitor">
+                            <span class="sh-visitor__name">@visitor.Name</span>
+                            <span class="sh-visitor__purpose">@visitor.Purpose</span>
+
+                            <button type="button" @onclick="() => ApproveAsync(visitor.Id)">
+                                @Strings.Gate_Approve
+                            </button>
+                            <button type="button" @onclick="() => DenyAsync(visitor.Id)">
+                                @Strings.Gate_Deny
+                            </button>
+                        </div>
+                    }
+                </section>
+            }
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.NoticeBoard">
+            @if (_needsAcknowledgement.Count > 0)
+            {
+                <section class="sh-home__section">
+                    <h2>@Strings.Notice_Board</h2>
+
+                    @foreach (var notice in _needsAcknowledgement)
+                    {
+                        <NoticeCard Notice="notice" OnAcknowledge="AcknowledgeAsync" />
+                    }
+                </section>
+            }
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.Complaints">
+            <section class="sh-home__section">
+                <h2>@Strings.Nav_Complaints</h2>
+
+                @if (_complaints.Count == 0)
+                {
+                    <p>Nothing open.</p>
+                }
+                else
+                {
+                    @foreach (var complaint in _complaints)
+                    {
+                        <ComplaintCard Complaint="complaint" />
+                    }
+                }
+            </section>
+        </FeatureView>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<VisitorView> _expected = [];
+    private IReadOnlyList<NoticeView> _needsAcknowledgement = [];
+    private IReadOnlyList<ComplaintView> _complaints = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Language.InitialiseAsync(societyDefault: null);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            var visitors = Api.GetExpectedVisitorsAsync();
+            var notices = Api.GetNoticesAsync();
+            var complaints = Api.GetMyComplaintsAsync();
+
+            await Task.WhenAll(visitors, notices, complaints);
+
+            _expected = await visitors;
+            _needsAcknowledgement = [.. (await notices).Where(n => n.NeedsMyAcknowledgement)];
+
+            _complaints =
+            [
+                .. (await complaints).Where(c => c.Status is not "Closed")
+            ];
+        }
+        catch (ApiException ex) when (ex.IsUpgradeRequired)
+        {
+            // The one error a resident must be able to act on. Everything else is "try again";
+            // this one means the app itself has to be updated, and saying "network problem"
+            // would send them to restart their router instead of the app store.
+            _error = Strings.Error_UpgradeRequired;
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ApproveAsync(Guid visitorId) => await ActAsync(() => Api.ApproveVisitorAsync(visitorId));
+
+    private async Task DenyAsync(Guid visitorId) => await ActAsync(() => Api.DenyVisitorAsync(visitorId));
+
+    private async Task AcknowledgeAsync(Guid noticeId) => await ActAsync(() => Api.AcknowledgeNoticeAsync(noticeId));
+
+    private async Task ActAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            await LoadAsync();
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+    }
+}

@@ -1,0 +1,71 @@
+@*
+    One notice on the board.
+
+    Title and body arrive already translated — the server resolved them against the caller's
+    language, so there is no per-client fallback logic here and no way for three apps to
+    disagree about which language a resident sees.
+*@
+
+<article class="sh-notice @(Notice.IsPinned ? "is-pinned" : null)">
+    <header class="sh-notice__header">
+        @if (Notice.IsPinned)
+        {
+            <span class="sh-notice__pin">@Strings.Notice_Pinned</span>
+        }
+
+        <h3 class="sh-notice__title">@Notice.Title</h3>
+
+        <p class="sh-notice__meta">
+            @Notice.AuthorName
+            @if (Notice.PublishedAtUtc is { } published)
+            {
+                <text> · </text>@published.ToLocalTime().ToString("d MMM, HH:mm")
+            }
+        </p>
+    </header>
+
+    @* Plain text, not markup. A notice is written by a committee member in a text box, and
+       rendering it as HTML would make the noticeboard a cross-site scripting vector aimed at
+       every resident of the society. *@
+    <p class="sh-notice__body">@Notice.Body</p>
+
+    @if (Notice.NeedsMyAcknowledgement)
+    {
+        <button type="button" class="sh-notice__ack" disabled="@_busy" @onclick="AcknowledgeAsync">
+            @Strings.Notice_Acknowledge
+        </button>
+    }
+    else if (Notice.RequiresAcknowledgement)
+    {
+        <span class="sh-notice__ack is-done">@Strings.Notice_Acknowledged</span>
+    }
+</article>
+
+@code {
+    private bool _busy;
+
+    [Parameter, EditorRequired]
+    public NoticeView Notice { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Guid> OnAcknowledge { get; set; }
+
+    private async Task AcknowledgeAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            await OnAcknowledge.InvokeAsync(Notice.Id);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

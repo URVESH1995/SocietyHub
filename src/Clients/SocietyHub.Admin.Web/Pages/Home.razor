@@ -1,0 +1,112 @@
+@page "/"
+@inject SocietyHubApiClient Api
+
+<PageTitle>SocietyHub</PageTitle>
+
+<h1>@Strings.Nav_Home</h1>
+
+@*
+    The console's landing page: the two things a committee member opens it to check.
+    Overdue complaints first, because those are the ones with a clock running.
+*@
+
+@if (_loading)
+{
+    <p>@Strings.Common_Loading</p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        @_error
+        <button class="btn btn-link" @onclick="LoadAsync">@Strings.Common_Retry</button>
+    </div>
+}
+else
+{
+    <FeatureView For="@FeatureKey.Complaints">
+        <section>
+            <h2>@Strings.Nav_Complaints</h2>
+
+            @if (_overdue.Count == 0)
+            {
+                <p>Nothing overdue.</p>
+            }
+            else
+            {
+                @foreach (var complaint in _overdue)
+                {
+                    <ComplaintCard Complaint="complaint" />
+                }
+            }
+        </section>
+    </FeatureView>
+
+    <FeatureView For="@FeatureKey.NoticeBoard">
+        <section>
+            <h2>@Strings.Notice_Board</h2>
+
+            @foreach (var notice in _notices.Take(5))
+            {
+                <NoticeCard Notice="notice" OnAcknowledge="AcknowledgeAsync" />
+            }
+        </section>
+    </FeatureView>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<ComplaintView> _overdue = [];
+    private IReadOnlyList<NoticeView> _notices = [];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            // Concurrently. They are independent, and a console that loads two lists in
+            // sequence feels twice as slow for no reason.
+            var complaints = Api.GetMyComplaintsAsync();
+            var notices = Api.GetNoticesAsync();
+
+            await Task.WhenAll(complaints, notices);
+
+            var now = DateTimeOffset.UtcNow;
+
+            _overdue = [.. (await complaints).Where(c => c.IsOverdue(now))];
+            _notices = await notices;
+        }
+        catch (ApiException ex) when (ex.IsFeatureDisabled)
+        {
+            // The manifest said the society has it and the server disagreed — a stale cache,
+            // or an override applied since start-up. Showing the feature's own message is
+            // more useful than a generic failure.
+            _error = Strings.Error_FeatureNotEnabled;
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task AcknowledgeAsync(Guid noticeId)
+    {
+        try
+        {
+            await Api.AcknowledgeNoticeAsync(noticeId);
+            await LoadAsync();
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+    }
+}

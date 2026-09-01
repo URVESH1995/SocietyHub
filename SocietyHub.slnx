@@ -13,6 +13,10 @@
     <Project Path="src/BuildingBlocks/SocietyHub.SharedKernel/SocietyHub.SharedKernel.csproj" />
     <Project Path="src/BuildingBlocks/SocietyHub.Web/SocietyHub.Web.csproj" />
   </Folder>
+  <Folder Name="/src/Clients/">
+    <Project Path="src/Clients/SocietyHub.Admin.Web/SocietyHub.Admin.Web.csproj" />
+    <Project Path="src/Clients/SocietyHub.Client.Shared/SocietyHub.Client.Shared.csproj" />
+  </Folder>
   <Folder Name="/src/Gateway/">
     <Project Path="src/Gateway/SocietyHub.ApiGateway/SocietyHub.ApiGateway.csproj" />
   </Folder>
@@ -36,6 +40,7 @@
     <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SocietyHub.Client.Tests/SocietyHub.Client.Tests.csproj" />
     <Project Path="tests/SocietyHub.Features.Tests/SocietyHub.Features.Tests.csproj" />
     <Project Path="tests/SocietyHub.Gate.Tests/SocietyHub.Gate.Tests.csproj" />
     <Project Path="tests/SocietyHub.Helpdesk.Tests/SocietyHub.Helpdesk.Tests.csproj" />

@@ -1,0 +1,72 @@
+@using SocietyHub.SharedKernel.Globalization
+@inject LanguageService Language
+
+@*
+    The language switcher.
+
+    Each option is labelled in its own script — someone who cannot read English cannot find
+    "Hindi" in a list, but they can find "हिन्दी". That is the entire reason NativeName exists
+    on LanguageOption, and it is the difference between a switcher that works for the people
+    who need it and one that only works for people who did not.
+
+    Rendered as buttons rather than a <select> because there are two languages. A dropdown
+    hides the choice behind a tap and gives a screen reader more to say for no benefit.
+*@
+
+<div class="sh-language-switcher" role="group" aria-label="@Strings.Common_Language">
+    @foreach (var option in LanguageService.Available)
+    {
+        var isCurrent = string.Equals(
+            option.Tag, Language.Current.Value, StringComparison.OrdinalIgnoreCase);
+
+        <button type="button"
+                class="sh-language-option @(isCurrent ? "is-current" : null)"
+                aria-pressed="@isCurrent"
+                lang="@option.Tag"
+                disabled="@(isCurrent || _switching)"
+                @onclick="() => SwitchAsync(option)">
+            @option.NativeName
+        </button>
+    }
+</div>
+
+@code {
+    private bool _switching;
+
+    /// <summary>
+    /// Raised after the language changes, so a shell that needs to reload server-rendered
+    /// content — notices arrive already translated — can refetch rather than showing the
+    /// previous language's text under a new set of labels.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private async Task SwitchAsync(LanguageOption option)
+    {
+        if (_switching)
+        {
+            return;
+        }
+
+        _switching = true;
+
+        try
+        {
+            var tag = LanguageTag.Create(option.Tag);
+
+            if (tag.IsFailure)
+            {
+                // Cannot happen from the list above, which is built from supported tags. If it
+                // ever does, leaving the language alone is the right failure.
+                return;
+            }
+
+            await Language.SetAsync(tag.Value);
+            await OnChanged.InvokeAsync();
+        }
+        finally
+        {
+            _switching = false;
+        }
+    }
+}

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Hindi (India). Every key in Strings.resx must appear here — a test asserts it.
+    Where an English word is what people actually say in Indian housing societies
+    ("society", "gate pass"), the Devanagari transliteration is used rather than a
+    formal Hindi translation nobody would recognise.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Navigation -->
+  <data name="Nav_Home"><value>होम</value></data>
+  <data name="Nav_Visitors"><value>आगंतुक</value></data>
+  <data name="Nav_Complaints"><value>शिकायतें</value></data>
+  <data name="Nav_Notices"><value>सूचनाएँ</value></data>
+  <data name="Nav_Polls"><value>मतदान</value></data>
+  <data name="Nav_Directory"><value>निर्देशिका</value></data>
+  <data name="Nav_Settings"><value>सेटिंग्स</value></data>
+
+  <!-- Gate -->
+  <data name="Gate_VisitorAtGate"><value>गेट पर एक आगंतुक है</value></data>
+  <data name="Gate_Approve"><value>अनुमति दें</value></data>
+  <data name="Gate_Deny"><value>मना करें</value></data>
+  <data name="Gate_PreApprove"><value>आगंतुक को पहले से अनुमति दें</value></data>
+  <data name="Gate_VisitorName"><value>आगंतुक का नाम</value></data>
+  <data name="Gate_Purpose"><value>आने का कारण</value></data>
+  <data name="Gate_ExpectedAt"><value>आने का समय</value></data>
+  <data name="Gate_PassCode"><value>गेट पास कोड</value></data>
+  <data name="Gate_ScanPass"><value>पास स्कैन करें</value></data>
+  <data name="Gate_CheckIn"><value>प्रवेश दर्ज करें</value></data>
+  <data name="Gate_CheckOut"><value>निकास दर्ज करें</value></data>
+  <data name="Gate_Delivery"><value>डिलीवरी</value></data>
+  <data name="Gate_DailyHelp"><value>दैनिक सहायक</value></data>
+
+  <!-- Complaints -->
+  <data name="Complaint_Raise"><value>शिकायत दर्ज करें</value></data>
+  <data name="Complaint_Title"><value>समस्या क्या है?</value></data>
+  <data name="Complaint_Description"><value>विवरण दें</value></data>
+  <data name="Complaint_Category"><value>श्रेणी</value></data>
+  <data name="Complaint_Priority"><value>प्राथमिकता</value></data>
+  <data name="Complaint_DueBy"><value>{0} तक</value>
+    <comment>{0} is a date and time already formatted in the society's timezone.</comment>
+  </data>
+  <data name="Complaint_Overdue"><value>समय सीमा बीत चुकी है</value></data>
+  <data name="Complaint_Resolved"><value>हल हो गया</value></data>
+  <data name="Complaint_Reopen"><value>ठीक नहीं हुआ — फिर से खोलें</value></data>
+  <data name="Complaint_RateIt"><value>हमारा काम कैसा रहा?</value></data>
+
+  <!-- Notices and polls -->
+  <data name="Notice_Board"><value>सूचना पट्ट</value></data>
+  <data name="Notice_Pinned"><value>महत्वपूर्ण</value></data>
+  <data name="Notice_Acknowledge"><value>मैंने यह पढ़ लिया है</value></data>
+  <data name="Notice_Acknowledged"><value>पढ़ लिया</value></data>
+  <data name="Poll_Vote"><value>मत दें</value></data>
+  <data name="Poll_ChangeVote"><value>अपना मत बदलें</value></data>
+  <data name="Poll_ClosesOn"><value>{0} को बंद होगा</value></data>
+  <data name="Poll_ResultsHidden"><value>परिणाम मतदान बंद होने के बाद दिखाए जाएंगे</value></data>
+  <data name="Poll_QuorumNotMet"><value>इसे मान्य करने के लिए पर्याप्त फ्लैटों ने मत नहीं दिया</value></data>
+
+  <!-- Safety -->
+  <data name="Sos_Button"><value>आपातकाल</value></data>
+  <data name="Sos_Confirm"><value>आपातकालीन अलर्ट भेजें?</value></data>
+  <data name="Sos_Raised"><value>अलर्ट भेज दिया गया। सहायता को सूचित कर दिया गया है।</value></data>
+
+  <!-- Common -->
+  <data name="Common_Save"><value>सहेजें</value></data>
+  <data name="Common_Cancel"><value>रद्द करें</value></data>
+  <data name="Common_Retry"><value>फिर से कोशिश करें</value></data>
+  <data name="Common_Loading"><value>लोड हो रहा है…</value></data>
+  <data name="Common_Language"><value>भाषा</value></data>
+  <data name="Common_SignOut"><value>साइन आउट</value></data>
+  <data name="Common_Offline"><value>आप ऑफ़लाइन हैं। कनेक्ट होने पर बदलाव सिंक हो जाएंगे।</value></data>
+  <data name="Common_QueuedItems"><value>{0} सिंक होने बाकी हैं</value></data>
+
+  <!-- Errors -->
+  <data name="Error_Generic"><value>कुछ गलत हो गया। कृपया फिर से कोशिश करें।</value></data>
+  <data name="Error_Network"><value>SocietyHub तक नहीं पहुँच सके। अपना कनेक्शन जाँचें।</value></data>
+  <data name="Error_SessionExpired"><value>आपका सत्र समाप्त हो गया है। कृपया फिर से साइन इन करें।</value></data>
+  <data name="Error_UpgradeRequired"><value>यह संस्करण अब समर्थित नहीं है। कृपया ऐप अपडेट करें।</value></data>
+  <data name="Error_FeatureNotEnabled"><value>आपकी सोसाइटी के पास यह सुविधा नहीं है।</value></data>
+</root>

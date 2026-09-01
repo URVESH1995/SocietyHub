@@ -1,0 +1,187 @@
+@page "/"
+@implements IDisposable
+@inject SocietyHubApiClient Api
+@inject OfflineQueue Queue
+@inject GateSyncService Sync
+@inject LanguageService Language
+
+@*
+    The gate screen. The only one a guard uses for most of a shift.
+
+    Every action here writes to the offline queue first and syncs later, rather than calling the
+    server and falling back to the queue on failure. That ordering is deliberate: it means the
+    behaviour is identical online and offline, so the offline path is exercised on every single
+    entry instead of being the rarely-run branch that turns out to be broken during the outage
+    it exists for.
+*@
+
+<div class="sh-gate">
+    <header class="sh-gate__header">
+        <h1>@Strings.Gate_CheckIn</h1>
+        <LanguageSwitcher />
+    </header>
+
+    <OfflineBanner Queue="Queue" IsOnline="Sync.IsOnline" />
+
+    <section class="sh-gate__scan">
+        <label for="pass">@Strings.Gate_PassCode</label>
+
+        @*
+            A text input, not only a camera. A QR scan is faster when it works, but a pass code
+            read aloud through a car window has to work too — at night, in rain, with a cracked
+            camera lens. The typed path is the one that must never be removed.
+        *@
+        <input id="pass"
+               inputmode="numeric"
+               autocomplete="off"
+               @bind="_passCode"
+               @bind:event="oninput"
+               placeholder="@Strings.Gate_PassCode" />
+
+        <button type="button" class="sh-gate__primary" disabled="@_busy" @onclick="CheckInByPassAsync">
+            @Strings.Gate_CheckIn
+        </button>
+    </section>
+
+    <section class="sh-gate__walkin">
+        <h2>@Strings.Gate_VisitorName</h2>
+
+        <input @bind="_name" placeholder="@Strings.Gate_VisitorName" />
+        <input @bind="_purpose" placeholder="@Strings.Gate_Purpose" />
+
+        <button type="button" disabled="@_busy" @onclick="CheckInWalkInAsync">
+            @Strings.Gate_CheckIn
+        </button>
+    </section>
+
+    @if (_message is not null)
+    {
+        <p class="sh-gate__message" role="status" aria-live="polite">@_message</p>
+    }
+
+    <section class="sh-gate__inside">
+        <h2>@Strings.Nav_Visitors</h2>
+
+        @foreach (var visitor in _inside)
+        {
+            <div class="sh-gate__visitor">
+                <span>@visitor.Name</span>
+                <button type="button" disabled="@_busy" @onclick="() => CheckOutAsync(visitor)">
+                    @Strings.Gate_CheckOut
+                </button>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private string _passCode = string.Empty;
+    private string _name = string.Empty;
+    private string _purpose = string.Empty;
+    private string? _message;
+    private bool _busy;
+    private IReadOnlyList<VisitorView> _inside = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Sync.Synced += OnSynced;
+
+        await Language.InitialiseAsync(societyDefault: null);
+        await RefreshAsync();
+    }
+
+    public void Dispose() => Sync.Synced -= OnSynced;
+
+    private void OnSynced(SyncResult result)
+    {
+        if (result.Parked.Count > 0)
+        {
+            // Shown, not swallowed. A rejected entry means someone got through the gate with
+            // no record, and the guard is the only person who can still do anything about it.
+            _message = $"{result.Parked.Count} entries were rejected and need checking.";
+        }
+
+        InvokeAsync(RefreshAsync);
+    }
+
+    private async Task CheckInByPassAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_passCode))
+        {
+            return;
+        }
+
+        await QueueAsync(
+            "api/v1/gate/visitors/check-in",
+            new CheckInRequest(_passCode.Trim(), null, null, null, null),
+            $"Check in with pass {_passCode.Trim()}");
+
+        _passCode = string.Empty;
+    }
+
+    private async Task CheckInWalkInAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            return;
+        }
+
+        await QueueAsync(
+            "api/v1/gate/visitors/check-in",
+            new CheckInRequest(null, _name.Trim(), null, _purpose.Trim(), null),
+            $"Check in {_name.Trim()}");
+
+        _name = string.Empty;
+        _purpose = string.Empty;
+    }
+
+    private Task CheckOutAsync(VisitorView visitor) =>
+        QueueAsync(
+            $"api/v1/gate/visitors/{visitor.Id}/check-out",
+            new { },
+            $"Check out {visitor.Name}");
+
+    private async Task QueueAsync<TBody>(string path, TBody body, string description)
+    {
+        _busy = true;
+        _message = null;
+
+        try
+        {
+            if (!await Queue.EnqueueAsync(path, body, description))
+            {
+                // The queue is full, which after two days of outage means something is badly
+                // wrong. Telling the guard lets them fall back to paper deliberately rather
+                // than discovering later that entries silently stopped being recorded.
+                _message = "The tablet cannot hold more entries. Use the register and call the office.";
+                return;
+            }
+
+            _message = description;
+
+            // Attempted immediately. Online this makes the queue invisible — the entry is sent
+            // within a second — while still going through the same path as an offline one.
+            await Sync.SyncAsync();
+            await RefreshAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            _inside = await Api.GetExpectedVisitorsAsync();
+        }
+        catch (Exception)
+        {
+            // Offline. The list stays as it was rather than blanking — a guard who can still
+            // see who is inside can still check them out, and those check-outs queue.
+        }
+
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,33 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">SocietyHub</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">@Strings.Nav_Home</NavLink>
+        </div>
+
+        <FeatureView For="@FeatureKey.VisitorManagement">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="visitors">@Strings.Nav_Visitors</NavLink>
+            </div>
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.Complaints">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="complaints">@Strings.Nav_Complaints</NavLink>
+            </div>
+        </FeatureView>
+
+        <FeatureView For="@FeatureKey.NoticeBoard">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="notices">@Strings.Nav_Notices</NavLink>
+            </div>
+        </FeatureView>
+    </nav>
+</div>

@@ -1,0 +1,47 @@
+@*
+    Shows its content only when the society has the feature.
+
+    Shaping, never enforcement. Every gated endpoint checks again on the server, because a
+    client is a thing an attacker controls — a resident who edits the manifest response gets a
+    bulk-drive tab whose every tap returns 402, which is the correct outcome.
+
+    The value of hiding it anyway is not security, it is that a Basic society should not have
+    its app full of buttons that only ever refuse them.
+*@
+
+@if (_manifest is null)
+{
+    @* Nothing while the manifest is loading. Not a spinner: this wraps individual tabs and
+       menu items, and a page of spinners on every launch reads as broken. *@
+}
+else if (_manifest.Has(For))
+{
+    @ChildContent
+}
+else if (Fallback is not null)
+{
+    @Fallback
+}
+
+@code {
+    private FeatureManifestView? _manifest;
+
+    [CascadingParameter]
+    public FeatureManifestView? Manifest { get; set; }
+
+    /// <summary>The feature key, from <c>SocietyHub.SharedKernel.Features.FeatureKey</c>.</summary>
+    [Parameter, EditorRequired]
+    public string For { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Optional. Shown when the society lacks the feature — an upgrade prompt for a committee
+    /// member, nothing at all for a resident who cannot act on it either way.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Fallback { get; set; }
+
+    protected override void OnParametersSet() => _manifest = Manifest;
+}

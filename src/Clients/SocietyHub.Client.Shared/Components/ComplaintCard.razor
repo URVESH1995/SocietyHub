@@ -1,0 +1,53 @@
+@*
+    One complaint, with its deadline.
+
+    The overdue state is computed here against the current time rather than read from the
+    server's flag alone. A resident leaves the app open; without this, a complaint stays green
+    on screen for hours after it has actually breached, which is exactly the moment they most
+    need to see that it has.
+*@
+
+<article class="sh-complaint @(_isOverdue ? "is-overdue" : null)">
+    <header class="sh-complaint__header">
+        <span class="sh-complaint__ticket">@Complaint.TicketNumber</span>
+        <span class="sh-complaint__status">@Complaint.Status</span>
+    </header>
+
+    <h3 class="sh-complaint__title">@Complaint.Title</h3>
+
+    <p class="sh-complaint__sla">
+        @if (_isOverdue)
+        {
+            <strong class="sh-complaint__overdue">@Strings.Complaint_Overdue</strong>
+        }
+        else
+        {
+            @string.Format(
+                Strings.Complaint_DueBy,
+                Complaint.SlaDueAtUtc.ToLocalTime().ToString("d MMM, HH:mm"))
+        }
+    </p>
+
+    @if (Complaint.AssignedToName is { Length: > 0 } assignee)
+    {
+        <p class="sh-complaint__assignee">@assignee</p>
+    }
+</article>
+
+@code {
+    private bool _isOverdue;
+
+    [Parameter, EditorRequired]
+    public ComplaintView Complaint { get; set; } = default!;
+
+    /// <summary>
+    /// Injected rather than read from DateTimeOffset.UtcNow so the overdue boundary is
+    /// testable. Every time decision in this platform goes through a TimeProvider for the
+    /// same reason.
+    /// </summary>
+    [Parameter]
+    public TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+
+    protected override void OnParametersSet() =>
+        _isOverdue = Complaint.IsOverdue(TimeProvider.GetUtcNow());
+}
