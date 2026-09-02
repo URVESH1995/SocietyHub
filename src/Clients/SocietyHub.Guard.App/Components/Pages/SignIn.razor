@@ -1,0 +1,23 @@
+@page "/sign-in"
+@layout Layout.AnonymousLayout
+@inject NavigationManager Navigation
+
+@*
+    The guard tablet's sign-in, using the same shared component as the console and the resident
+    app.
+
+    A guard signs in at the start of a shift on a device the society owns and nobody takes home.
+    The token is kept in the Android Keystore rather than memory precisely because of that: a
+    tablet that signs itself out every time the app is backgrounded is a tablet a guard stops
+    using.
+*@
+
+<div class="sh-signin-page">
+    <SignInForm OnSignedIn="OnSignedIn" />
+
+    <LanguageSwitcher />
+</div>
+
+@code {
+    private void OnSignedIn() => Navigation.NavigateTo("/", replace: true);
+}

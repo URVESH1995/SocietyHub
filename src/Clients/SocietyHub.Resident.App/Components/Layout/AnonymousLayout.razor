@@ -1,0 +1,13 @@
+@inherits LayoutComponentBase
+
+@*
+    Signed-out shell: the page and nothing else.
+
+    No navigation and no manifest fetch, because everything the main layout does needs a token.
+    Rendering it around a sign-in form means a burst of 401s before the person has had any
+    chance to sign in.
+*@
+
+<main class="sh-shell sh-shell--anonymous">
+    @Body
+</main>

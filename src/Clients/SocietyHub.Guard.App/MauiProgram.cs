@@ -4,6 +4,7 @@ using SocietyHub.Client.Shared.Api;
 using SocietyHub.Client.Shared.Localization;
 using SocietyHub.Client.Shared.Platform;
 using SocietyHub.Guard.App.Platform;
+using ZXing.Net.Maui.Controls;
 
 namespace SocietyHub.Guard.App;
 
@@ -34,7 +35,11 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .ConfigureFonts(fonts => fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"));
+            .ConfigureFonts(fonts => fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"))
+
+            // Registers the ZXing handlers. Without this the camera view resolves to nothing
+            // and the scan sheet opens blank — with no error anywhere.
+            .UseBarcodeReader();
 
         builder.Services.AddMauiBlazorWebView();
 
@@ -61,6 +66,11 @@ public static class MauiProgram
             new ClientIdentity("guard", AppInfo.Current.VersionString));
 
         builder.Services.AddSingleton<GateSyncService>();
+        builder.Services.AddSingleton<IBarcodeScanner, MauiBarcodeScanner>();
+
+        builder.Services.AddSingleton<IPushTokenCache, PreferencePushTokenCache>();
+        builder.Services.AddSingleton<IDeviceTokenProvider, NoPushTokenProvider>();
+        builder.Services.AddSingleton<PushRegistrationService>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

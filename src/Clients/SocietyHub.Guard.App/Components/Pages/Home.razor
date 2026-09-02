@@ -4,6 +4,8 @@
 @inject OfflineQueue Queue
 @inject GateSyncService Sync
 @inject LanguageService Language
+@inject IBarcodeScanner Scanner
+@inject NavigationManager Navigation
 
 @*
     The gate screen. The only one a guard uses for most of a shift.
@@ -38,9 +40,20 @@
                @bind:event="oninput"
                placeholder="@Strings.Gate_PassCode" />
 
-        <button type="button" class="sh-gate__primary" disabled="@_busy" @onclick="CheckInByPassAsync">
-            @Strings.Gate_CheckIn
-        </button>
+        <div class="sh-gate__actions">
+            @*
+                Scan sits beside the typed field, never instead of it. A code read aloud through
+                a car window at night, or a pass on a cracked phone screen, has to work — so the
+                keyboard path stays primary and the camera is the faster option on top of it.
+            *@
+            <button type="button" class="sh-gate__scan" disabled="@_busy" @onclick="ScanAsync">
+                @Strings.Gate_ScanPass
+            </button>
+
+            <button type="button" class="sh-gate__primary" disabled="@_busy" @onclick="CheckInByPassAsync">
+                @Strings.Gate_CheckIn
+            </button>
+        </div>
     </section>
 
     <section class="sh-gate__walkin">
@@ -87,6 +100,15 @@
         Sync.Synced += OnSynced;
 
         await Language.InitialiseAsync(societyDefault: null);
+
+        // Before any authenticated call, so a tablet whose shift ended overnight opens on the
+        // sign-in screen rather than a gate screen full of 401s.
+        if (!await Api.IsSignedInAsync())
+        {
+            Navigation.NavigateTo("/sign-in", replace: true);
+            return;
+        }
+
         await RefreshAsync();
     }
 
@@ -102,6 +124,33 @@
         }
 
         InvokeAsync(RefreshAsync);
+    }
+
+    /// <summary>
+    /// Scans a pass and checks in immediately.
+    ///
+    /// No confirmation step. A guard scanning a pass has already decided — an extra tap between
+    /// the scan and the entry is a tap taken while a vehicle waits, and it is the thing that
+    /// makes people stop using the scanner.
+    /// </summary>
+    private async Task ScanAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        var scanned = await Scanner.ScanAsync();
+
+        if (string.IsNullOrWhiteSpace(scanned))
+        {
+            // Cancelled, or no camera permission. Nothing to report — the guard is about to
+            // type it instead.
+            return;
+        }
+
+        _passCode = scanned.Trim();
+        await CheckInByPassAsync();
     }
 
     private async Task CheckInByPassAsync()

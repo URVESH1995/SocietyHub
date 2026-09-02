@@ -8,26 +8,32 @@ source of truth, not any external board.
 | Phase | Scope | Done | Total | Progress |
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
-| **1** | Daily operations | 63 | 65 | 97% |
+| **1** | Daily operations | 65 | 65 | 100% |
 | **2** | Bulk service drives | 0 | 22 | 0% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **87** | **182** | **48%** |
+| | **Total** | **89** | **182** | **49%** |
 
 ---
 
 ## Where the project stands
 
-**Phase 1 is complete** as of 2 September 2026, except for two client tasks explicitly marked
-in progress. What exists is a working backend that boots, and three client apps that build.
+**Phase 1 is complete** as of 2 September 2026 — all 65 tasks. What exists is a backend that
+runs end to end and three client apps that build, with the admin console verified in a browser
+against the live stack.
+
+Two things in the mobile apps are code-complete but **unverified on hardware**, and are listed
+honestly under "what has not been verified" in [CLIENTS.md](CLIENTS.md): the camera scan path
+and push delivery. Push additionally needs a Firebase project, which is the customer's to
+supply — the app builds and runs without it and simply receives no push.
 
 | | Count |
 | --- | --- |
 | Services | 6 — Identity, Society, Gate, Helpdesk, Notification, Notice |
 | Client apps | 3 — Admin web (Blazor WASM PWA), Resident (MAUI), Guard (MAUI) |
 | Building blocks | 8 — SharedKernel, Contracts, Persistence, Messaging, Caching, Web, Features, ServiceDefaults |
-| Tests | **300 passing**, 4 requiring Docker |
+| Tests | **319 passing**, 4 of them against real containers |
 | Release build | Clean with `-warnaserror`, zero warnings |
 
 ### What has actually been proven, and what has only been built
@@ -41,17 +47,20 @@ unit tests pass; it does not by itself mean anyone has watched it work.
 | The topology boots | **Proven** (`P0-23`). SQL Server, Redis and RabbitMQ healthy; the gateway routes to Identity through YARP service discovery. |
 | Domain rules are correct | **Unit-tested.** SLA clocks, quiet hours, poll quorum, notification cost policy, entitlement resolution, the offline queue. |
 | The six services run together end to end | **Proven**, 2 September 2026. All six start under Aspire, the gateway routes to every one of them, and `/api/v1/{service}/info` returns 200 through it. Getting there took six fixes — see the commit for what was actually broken. |
-| Anything renders in a browser or on a phone | **Browser, yes, end to end.** Sign in with a phone and a one-time code, in English or Hindi, against the live stack — verified for the resident, admin and guard demo users. Feature-gated navigation populates from the real entitlement manifest. The mobile apps compile but no screen has been opened. |
+| Anything renders in a browser | **Proven, end to end.** Sign in with a phone and a one-time code, in English or Hindi, against the live stack — verified for the resident, admin and guard demo users. Feature-gated navigation populates from the real entitlement manifest, and a guard is turned away from the committee console with an explanation. |
+| Anything renders on a phone | **Not yet.** Both MAUI apps build for Android and their logic is unit-tested, but no screen has been opened on hardware. The camera scan and push delivery specifically cannot be proven any other way — an emulator has no real camera and issues no push token. |
 
-### The two Phase 1 tasks still open
+### What Phase 1 leaves behind
 
-Both build and both have their hard parts finished and tested. What is missing is the
-surrounding UI, which is real work and is not hidden:
+Nothing in Phase 1 is outstanding. Two things are worth carrying forward rather than
+forgetting:
 
-- **`P1-54` Resident app** — needs sign-in screens and push registration. Secure token
-  storage, refresh rotation and the shared components are done.
-- **`P1-55` Guard app** — needs camera and QR capture. The typed pass-code path works, and the
-  offline queue that makes the whole app viable is complete and covered by 11 tests.
+- **Hardware verification.** The camera scan path and push delivery are code-complete and
+  build, but no screen has been opened on a real device. Listed in detail under "what has not
+  been verified" in [CLIENTS.md](CLIENTS.md).
+- **Two launch prerequisites live in Phase 4**, not year two: dashboards and alerting
+  (`P4-01`, `P4-02`), and the DPDP compliance work (`P4-12`). You cannot operate a 99.9% SLO
+  without the first or legally launch in India without the second.
 
 ---
 
@@ -65,7 +74,7 @@ Three levels, cheapest first. Each answers a different question.
 dotnet test SocietyHub.slnx
 ```
 
-300 tests. Four will report as skipped without Docker; that is expected and correct.
+319 tests. Four report as skipped without Docker; that is expected and correct.
 
 ### 2. Is the isolation real against a real database? (Docker required, ~2 minutes)
 
@@ -97,10 +106,17 @@ The admin console runs separately:
 dotnet run --project src/Clients/SocietyHub.Admin.Web
 ```
 
-**A caveat worth stating plainly:** the console signs in against Identity, and the sign-in
-screens are the part of `P1-54` that is not built. Until they are, the console renders its
-shell and reports that it cannot reach the API — which is honest behaviour, but it is not a
-demo. The Scalar pages are currently the better way to see the system work.
+Sign in with any seeded demo user. A development build returns the one-time code on the wire
+and shows it on screen, so no telecom account is needed:
+
+| Phone | Signs in as |
+| --- | --- |
+| `9000000001` | Demo Admin — the full console |
+| `9000000002` | Amit Sharma, resident |
+| `9000000003` | Ramesh, guard — refused, with an explanation |
+
+The last row is the interesting one: the console admits only society administrators and
+committee members, because a guard has the gate tablet and a resident has the mobile app.
 
 See [RUNNING.md](RUNNING.md) for prerequisites and [CLIENTS.md](CLIENTS.md) for building the
 mobile apps.
@@ -281,8 +297,8 @@ region-pluggable residency — genuinely can wait.
 ### Client applications
 - [x] `P1-52` **Shared Razor class library** — components, view models, API client, offline queue
 - [x] `P1-53` **API client SDK** — hand-written, with an OpenAPI drift-check script (see note)
-- [~] `P1-54` **Resident app** — MAUI Blazor Hybrid, builds for Android; sign-in done, push pending
-- [~] `P1-55` **Guard app** — Android tablet with a persisted offline queue; camera/QR pending
+- [x] `P1-54` **Resident app** — MAUI Blazor Hybrid, sign-in and FCM push registration; needs your Firebase project
+- [x] `P1-55` **Guard app** — Android tablet, offline queue, sign-in, camera QR scan beside typed entry
 - [x] `P1-56` **Admin and committee web** — Blazor WASM PWA, feature-gated navigation
 - [x] `P1-57` **Localisation** — en-IN and hi-IN resources, parity-tested, native-script switcher
 
@@ -510,7 +526,7 @@ expensive with every service added:
 
 1. **Run `scripts/smoke-test.sh` to completion.** Six services, never yet exercised together.
    This is the largest single unknown in the project.
-2. **Finish `P1-54` and `P1-55`** — sign-in and camera capture — so the clients are
-   demonstrable rather than merely compilable.
+2. **Open both mobile apps on a real device.** They build and their logic is tested, but the
+   camera scan and push delivery cannot be proven any other way.
 3. **`P4-01` and `P4-02`, dashboards and alerting.** You cannot operate a 99.9% SLO without
    them, and retrofitting instrumentation across ten services costs more than across six.

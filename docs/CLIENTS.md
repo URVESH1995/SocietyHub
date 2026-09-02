@@ -171,18 +171,113 @@ cycle and a second retirement schedule for a device nobody uses at a gate.
 
 ---
 
-## What is deliberately not built yet
+## Sign-in
 
-Stated plainly rather than left to be discovered:
+Phone and a one-time code, no password anywhere. `SignInForm` is shared, so the console, the
+resident app and the guard tablet cannot drift on OTP handling, error wording or the
+multi-society choice — the last of which is the case most easily got wrong and least often
+exercised.
 
-- **Camera and QR capture in the Guard app.** The gate screen takes a pass code by keyboard,
-  which is the path that must never be removed — a code read aloud through a car window at
-  night has to work. Camera capture is a faster path on top of that, not a replacement, and it
-  needs a device to develop against.
-- **Sign-in screens.** The token plumbing, refresh rotation and secure storage are complete and
-  tested; the login forms that drive them are not built.
-- **Push notification registration.** The server side exists (`/api/notification/push-tokens`);
-  wiring Firebase and APNs into the mobile shells does not.
+That choice is real: a phone can be a Guard at one address and on a committee at another, so
+verifying a code returns *either* tokens *or* a list of societies on the same 200. The client
+parses on the discriminating field rather than deserialising into one type and hoping.
 
-These are v1.0 scope and are tracked in Phase 4's launch-prerequisite group, not silently
-dropped.
+Error codes are mapped from the ones Identity actually emits (`Otp.TooManyRequests`, not
+`otp.rate_limited`), and a test reads both sides and fails if either renames one. That test
+exists because the mapping was written from memory the first time and every code was wrong —
+a rate-limited resident saw "something went wrong" instead of being told to wait, and nothing
+failed or logged.
+
+**In development the code is returned on the wire and shown on screen**, because a local run
+has no telecom account behind it. A production build never populates that field, and the
+on-screen notice is deliberately styled to look like something that must not ship.
+
+---
+
+## Push notifications
+
+Push carries almost everything the platform sends, because SMS is reserved for emergencies on
+cost grounds. That makes a stale token an expensive kind of silence: the server sends happily
+to an address that no longer exists, nothing errors, and a resident simply stops hearing about
+visitors at their gate.
+
+`PushRegistrationService` owns the lifecycle and is fully covered by tests, because the
+lifecycle is where the failures are:
+
+- Registration happens **after sign-in**, not at start-up — the endpoint is society-scoped.
+- An unchanged token is not re-sent. Across 42,000 flats, every launch would otherwise be a
+  database write for data that did not change.
+- A **rotation** re-registers without a restart. The platform rotates on reinstall and on
+  restore from backup; an app that registers once at install goes silently unreachable months
+  later and nobody connects the two events.
+- A **failed registration is not cached**, so it retries. Caching before the server confirms
+  leaves a device permanently unreachable while appearing registered.
+- Registration failing **never throws**. A resident with no notifications still needs to open
+  the app.
+
+### Configuration you must supply
+
+The Android provider is real — `FirebaseDeviceTokenProvider` uses Firebase Cloud Messaging —
+but Firebase needs a project, and the project is yours. It carries your sender id and keys and
+nobody else's will do:
+
+1. Create an Android app in the Firebase console using the id from the csproj
+   (`com.companyname.societyhub.resident.app`).
+2. Put `google-services.json` in `Platforms/Android/`.
+3. Reference it: `<GoogleServicesJson Include="Platforms\Android\google-services.json" />`.
+4. Give the Notification service the FCM server key, so it can send to the tokens this
+   registers.
+
+**Without that file the app still builds, runs, signs in and works** — `GetTokenAsync` returns
+null and the registration service treats it as "no push available", which is the same path a
+device takes when notification permission is refused. Crashing on a missing config file would
+make the app undevelopable for anyone without your credentials.
+
+iOS needs the APNs equivalent and a Mac to build; the provider seam is the same.
+
+---
+
+## Camera and QR
+
+The guard tablet scans a pass with `ZXing.Net.Maui`, behind an `IBarcodeScanner` seam so the
+gate screen stays testable without a camera.
+
+**Scan is beside the typed field, never instead of it.** A code read aloud through a car window
+at night, or a pass on a cracked phone screen behind glass, has to work. The keyboard path is
+primary and the camera is the faster option on top of it — and cancelling a scan silently
+returns to the keyboard rather than reporting anything.
+
+Details that are not incidental:
+
+- The scanner is **modal, not embedded**. A live preview on the gate screen holds the camera
+  open all shift, drains a wall-mounted tablet on a marginal charger, and points a lens at the
+  gate recording nothing — which a resident committee will eventually ask about.
+- **Camera permission is requested at the point of use**, not during onboarding. A prompt shown
+  before anyone has seen why it is needed is the one most often refused, and a refused
+  permission on a wall-mounted tablet is awkward to recover from without physical access.
+- `android.hardware.camera` is declared `required="false"`. Without that, Google Play hides the
+  app from every device with no camera — including some of the cheap tablets societies actually
+  buy. The typed path works on all of them, so the app must stay installable.
+- Only QR and Code 128 are decoded. Every extra format is work on every frame, and on low-end
+  hardware that is the difference between an instant read and holding a phone steady for five
+  seconds.
+- Detection **detaches on the first result**. The camera keeps producing frames while the modal
+  dismisses, and a second detection could check the same visitor in twice.
+
+---
+
+## What has not been verified on a device
+
+Stated plainly. Both MAUI apps **build for Android** and their logic is unit-tested, but no
+screen has been opened on real hardware:
+
+- The camera scan path needs a physical tablet — an emulator's simulated camera does not
+  exercise autofocus, low light, or a pass held behind glass.
+- Push delivery needs a Firebase project and a real device; an emulator without Play Services
+  never issues a token.
+- Keychain and Keystore behaviour after an OS upgrade — the case
+  `MauiSecureStorage.GetAsync` catches and treats as "signed out" — only reproduces on a
+  device that has actually been upgraded.
+
+Everything around those three — token lifecycle, offline queue, sign-in, localisation — is
+covered by tests that run without hardware.

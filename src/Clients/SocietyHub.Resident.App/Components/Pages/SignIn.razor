@@ -1,0 +1,30 @@
+@page "/sign-in"
+@layout Layout.AnonymousLayout
+@inject NavigationManager Navigation
+@inject PushRegistrationService Push
+
+@*
+    The resident app's sign-in, using the same component the console and guard tablet use.
+    One implementation means the three cannot drift on OTP handling, error messages or the
+    multi-society choice — which is the case most easily got wrong and least often tested.
+*@
+
+<div class="sh-signin-page">
+    <SignInForm OnSignedIn="OnSignedInAsync" InitialPhone="@_lastPhone" />
+
+    <LanguageSwitcher />
+</div>
+
+@code {
+    private string? _lastPhone;
+
+    private async Task OnSignedInAsync()
+    {
+        // Registered here rather than at start-up, because the endpoint is society-scoped and
+        // needs the token that only exists once someone has signed in. A device that never
+        // registers receives nothing, and does so silently.
+        await Push.StartAsync();
+
+        Navigation.NavigateTo("/", replace: true);
+    }
+}

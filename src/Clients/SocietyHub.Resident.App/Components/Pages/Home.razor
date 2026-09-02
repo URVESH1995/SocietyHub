@@ -1,6 +1,8 @@
 @page "/"
 @inject SocietyHubApiClient Api
 @inject LanguageService Language
+@inject NavigationManager Navigation
+@inject PushRegistrationService Push
 
 @*
     A resident's home screen.
@@ -99,6 +101,21 @@
     protected override async Task OnInitializedAsync()
     {
         await Language.InitialiseAsync(societyDefault: null);
+
+        // Checked before any authenticated call. Loading first would fire a 401 that the API
+        // client handles by clearing the session — harmless, but it produces an error flash on
+        // every launch by someone who is simply signed out.
+        if (!await Api.IsSignedInAsync())
+        {
+            Navigation.NavigateTo("/sign-in", replace: true);
+            return;
+        }
+
+        // Cheap when the token has not changed — the cache short-circuits it — so running it on
+        // every launch is how a rotated token gets noticed on a device that was already signed
+        // in when it rotated.
+        await Push.StartAsync();
+
         await LoadAsync();
     }
 

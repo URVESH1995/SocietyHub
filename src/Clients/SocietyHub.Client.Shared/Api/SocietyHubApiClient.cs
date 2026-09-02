@@ -201,6 +201,19 @@ public sealed class SocietyHubApiClient
         !string.IsNullOrEmpty(await _tokens.GetAccessTokenAsync())
         || !string.IsNullOrEmpty(await _tokens.GetRefreshTokenAsync());
 
+    // ---- notifications ---------------------------------------------------
+
+    /// <summary>
+    /// Tells the platform where to push to this device.
+    ///
+    /// Society-scoped, so it needs a signed-in caller — which is why registration happens after
+    /// sign-in rather than at start-up. Without a registered token push reaches nobody, and it
+    /// does so silently: the server sends successfully to an address that no longer exists.
+    /// </summary>
+    public Task RegisterPushTokenAsync(string token, CancellationToken ct = default) =>
+        PostAsync<object, object>(
+            "api/v1/notification/notifications/push-token", new { token }, ct);
+
     // ---- gate ----------------------------------------------------------
 
     public Task<IReadOnlyList<VisitorView>> GetExpectedVisitorsAsync(CancellationToken ct = default) =>

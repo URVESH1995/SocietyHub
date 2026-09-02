@@ -1,6 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        Scanning a gate pass. Requested at the point of use rather than on first launch: a
+        permission prompt during onboarding, before anyone has seen why it is needed, is the
+        one most often refused — and a refused camera permission on a wall-mounted tablet is
+        awkward to recover from without physical access to the device.
+    -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!--
+        required="false" is load-bearing. Without it Google Play hides the app from every
+        device with no camera, and some of the cheap wall-mounted tablets societies actually
+        buy do not have one. The typed pass-code path works on all of them, so the app must
+        remain installable.
+    -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>

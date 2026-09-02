@@ -42,6 +42,17 @@ public static class MauiProgram
         builder.Services.AddSingleton<ITokenStore, SecureTokenStore>();
         builder.Services.AddSingleton<ILanguageStore, PreferenceLanguageStore>();
         builder.Services.AddSingleton<IQueueStore, FileQueueStore>();
+        builder.Services.AddSingleton<IPushTokenCache, PreferencePushTokenCache>();
+
+        // Firebase on Android; nothing anywhere else. The Windows target exists only so this
+        // app can be developed without a device, and it has no push integration to offer.
+#if ANDROID
+        builder.Services.AddSingleton<IDeviceTokenProvider, Platforms.Android.FirebaseDeviceTokenProvider>();
+#else
+        builder.Services.AddSingleton<IDeviceTokenProvider, NoPushTokenProvider>();
+#endif
+
+        builder.Services.AddSingleton<PushRegistrationService>();
 
         builder.Services.AddSocietyHubClient(
             new Uri(GatewayBaseAddress),
@@ -56,7 +67,18 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+
+#if ANDROID
+        // Android constructs the messaging service itself, before any of this has run, so the
+        // callback needs a way back to the provider instance the app is using. Set here rather
+        // than resolved there, because there is no scope to resolve from inside a Service.
+        Platforms.Android.SocietyHubFirebaseMessagingService.Provider =
+            (Platforms.Android.FirebaseDeviceTokenProvider)
+                app.Services.GetRequiredService<IDeviceTokenProvider>();
+#endif
+
+        return app;
     }
 
     private static string Platform() => DeviceInfo.Current.Platform == DevicePlatform.iOS
