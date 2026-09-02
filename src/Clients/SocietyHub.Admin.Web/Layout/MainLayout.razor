@@ -13,6 +13,34 @@
     a few times a month.
 *@
 
+@if (_me is not null && !ConsoleAccess.IsAdmitted(_me))
+{
+    @*
+        Shown instead of the shell, not alongside it. Rendering the navigation and then
+        failing every panel with a 403 is technically correct and reads as a broken app;
+        this says what happened and what to use instead.
+    *@
+    <main class="sh-shell sh-shell--anonymous">
+        <div class="sh-signin-page">
+            <h1 class="sh-signin__title">@Strings.Access_WrongAppTitle</h1>
+            <p>@Strings.Access_WrongAppBody</p>
+
+            <p class="sh-signin__hint">
+                @string.Format(Strings.Access_SignedInAsRole, string.Join(", ", _me.Roles))
+            </p>
+
+            @* A way out. A dead end on a shared machine leaves the next person holding
+               somebody else's session. *@
+            <button type="button" class="sh-signin__primary" @onclick="SignOutAsync">
+                @Strings.Common_SignOut
+            </button>
+
+            <LanguageSwitcher OnChanged="OnLanguageChangedAsync" />
+        </div>
+    </main>
+}
+else
+{
 <CascadingValue Value="_manifest">
     <div class="page">
         <div class="sidebar">
@@ -61,6 +89,7 @@
         </main>
     </div>
 </CascadingValue>
+}
 
 @code {
     private FeatureManifestView? _manifest;

@@ -145,4 +145,7 @@
   <data name="Error_UnknownPhone"><value>That number is not registered with any society.</value></data>
   <data name="Error_AccountDisabled"><value>This account has been suspended. Please contact your society office.</value></data>
   <data name="Error_Forbidden"><value>Your role does not have access to this.</value></data>
+  <data name="Access_WrongAppTitle"><value>This console is for committee members</value></data>
+  <data name="Access_WrongAppBody"><value>Your role in this society does not use the admin console. Residents should use the SocietyHub app; guards should use the gate tablet.</value></data>
+  <data name="Access_SignedInAsRole"><value>You are signed in as {0}.</value></data>
 </root>

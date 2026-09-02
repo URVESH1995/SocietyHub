@@ -146,4 +146,7 @@
   <data name="Error_UnknownPhone"><value>यह नंबर किसी सोसाइटी में दर्ज नहीं है।</value></data>
   <data name="Error_AccountDisabled"><value>यह खाता निलंबित कर दिया गया है। कृपया अपने सोसाइटी कार्यालय से संपर्क करें।</value></data>
   <data name="Error_Forbidden"><value>आपकी भूमिका को इसकी अनुमति नहीं है।</value></data>
+  <data name="Access_WrongAppTitle"><value>यह कंसोल समिति सदस्यों के लिए है</value></data>
+  <data name="Access_WrongAppBody"><value>इस सोसाइटी में आपकी भूमिका एडमिन कंसोल का उपयोग नहीं करती। निवासी SocietyHub ऐप का उपयोग करें; गार्ड गेट टैबलेट का उपयोग करें।</value></data>
+  <data name="Access_SignedInAsRole"><value>आप {0} के रूप में साइन इन हैं।</value></data>
 </root>
