@@ -79,7 +79,19 @@ var noticeApi = builder.AddProject<Projects.SocietyHub_Notice_Api>("notice-api")
 
 // The gateway is the only component with a publicly reachable endpoint. Everything
 // else is reachable solely through service discovery inside the compose network.
+// The gateway's port is pinned rather than left to Aspire's dynamic assignment.
+//
+// Every other service can move freely — they are reached through service discovery, which
+// resolves whatever port they landed on. The gateway cannot: it is the address the three
+// client apps are configured against, and a Blazor WebAssembly build has no way to discover a
+// port that changes on every run. Leaving it dynamic meant the admin console defaulted to its
+// own origin, where every API call hit the SPA fallback and returned index.html with HTTP 200.
+//
+// 5280 rather than the obvious 8080: on Windows, 8080 is routinely held by an HTTP.sys
+// reservation owned by the System process, and Kestrel then fails to bind with an error that
+// never mentions what took the port.
 builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
+       .WithEndpoint("http", endpoint => endpoint.Port = 5280)
        .WithReference(identityApi).WaitFor(identityApi)
        .WithReference(societyApi).WaitFor(societyApi)
        .WithReference(gateApi).WaitFor(gateApi)

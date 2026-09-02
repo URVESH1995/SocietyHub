@@ -80,6 +80,19 @@ else
             _overdue = [.. (await complaints).Where(c => c.IsOverdue(now))];
             _notices = await notices;
         }
+        catch (ApiException ex) when (ex.IsUnauthorised)
+        {
+            // Not a network problem, and saying so sends people to restart their router. The
+            // API client has already cleared the session; this is the message that tells them
+            // what to actually do about it.
+            _error = Strings.Error_SessionExpired;
+        }
+        catch (ApiException ex) when (ex.IsMisconfigured)
+        {
+            // Developer-facing on purpose — it only happens when the console is pointed at
+            // something that is not the API, and whoever sees it needs the real reason.
+            _error = ex.Message;
+        }
         catch (ApiException ex) when (ex.IsFeatureDisabled)
         {
             // The manifest said the society has it and the server disagreed — a stale cache,

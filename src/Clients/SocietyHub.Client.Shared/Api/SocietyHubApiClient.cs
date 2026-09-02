@@ -53,6 +53,12 @@ public sealed class ApiException : Exception
     public bool IsFeatureDisabled => (int)StatusCode == 402;
 
     public bool IsUnauthorised => StatusCode == HttpStatusCode.Unauthorized;
+
+    /// <summary>
+    /// The client reached something that is not the API. Almost always a misconfigured base
+    /// address; worth distinguishing from a network failure because the fixes are unrelated.
+    /// </summary>
+    public bool IsMisconfigured => Code == "response.not_json";
 }
 
 /// <summary>
@@ -156,9 +162,40 @@ public sealed class SocietyHubApiClient
     {
         using var response = await SendAsync(HttpMethod.Get, path, content: null, ct);
 
+        EnsureJson(response, path);
+
         return await response.Content.ReadFromJsonAsync<T>(Json, ct)
                ?? throw new ApiException(
                    response.StatusCode, "response.empty", $"{path} returned an empty body.");
+    }
+
+    /// <summary>
+    /// Rejects a successful response that is not JSON.
+    ///
+    /// Exists for one specific and genuinely confusing failure: pointed at the wrong host, a
+    /// request lands on a single-page app's fallback route and comes back as HTTP 200 carrying
+    /// index.html. Without this check the caller sees a JSON parsing exception, reports it as a
+    /// network problem, and someone spends an afternoon looking at a server that is fine.
+    ///
+    /// A proxy or captive portal returning an HTML error page produces the same shape.
+    /// </summary>
+    private static void EnsureJson(HttpResponseMessage response, string path)
+    {
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+
+        if (mediaType is null
+            || mediaType.Contains("json", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var status = response.StatusCode;
+
+        throw new ApiException(
+            status,
+            "response.not_json",
+            $"{path} returned {mediaType} rather than JSON. The client is most likely "
+            + "pointed at the wrong host — check Gateway:BaseAddress.");
     }
 
     private async Task<IReadOnlyList<T>> GetListAsync<T>(string path, CancellationToken ct) =>
@@ -174,6 +211,8 @@ public sealed class SocietyHubApiClient
     {
         using var content = JsonContent.Create(request, options: Json);
         using var response = await SendAsync(HttpMethod.Post, path, content, ct);
+
+        EnsureJson(response, path);
 
         return await response.Content.ReadFromJsonAsync<TResponse>(Json, ct)
                ?? throw new ApiException(

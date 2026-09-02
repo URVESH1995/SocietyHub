@@ -40,8 +40,8 @@ unit tests pass; it does not by itself mean anyone has watched it work.
 | Tenant isolation holds | **Proven.** 16 unit tests plus 4 integration tests against real SQL Server 2022 — filtered SQL, cross-tenant reads, rowversion concurrency, Devanagari collation. Layer 5 (row-level security) separately proven against a live instance, including raw SQL that bypasses EF. |
 | The topology boots | **Proven** (`P0-23`). SQL Server, Redis and RabbitMQ healthy; the gateway routes to Identity through YARP service discovery. |
 | Domain rules are correct | **Unit-tested.** SLA clocks, quiet hours, poll quorum, notification cost policy, entitlement resolution, the offline queue. |
-| The six services run together end to end | **Not yet.** `scripts/smoke-test.sh` exists and has never been run to completion. This is the single largest gap. |
-| Anything renders in a browser or on a phone | **Not yet.** The apps compile; no screen has been opened. See "How to verify" below. |
+| The six services run together end to end | **Proven**, 2 September 2026. All six start under Aspire, the gateway routes to every one of them, and `/api/v1/{service}/info` returns 200 through it. Getting there took six fixes — see the commit for what was actually broken. |
+| Anything renders in a browser or on a phone | **Browser, yes.** The admin console renders, switches between English and Hindi, and reaches the live gateway. It then stops at a 401, because sign-in is the part of `P1-54` that is not built. The mobile apps compile but no screen has been opened. |
 
 ### The two Phase 1 tasks still open
 

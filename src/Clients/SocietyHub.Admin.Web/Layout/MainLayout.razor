@@ -25,6 +25,13 @@
             </div>
 
             <article class="content px-4">
+                @if (_configurationError is not null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Configuration problem.</strong> @_configurationError
+                    </div>
+                }
+
                 @if (_loadFailed)
                 {
                     @*
@@ -47,6 +54,7 @@
 @code {
     private FeatureManifestView? _manifest;
     private bool _loadFailed;
+    private string? _configurationError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,6 +69,7 @@
     private async Task LoadAsync()
     {
         _loadFailed = false;
+        _configurationError = null;
 
         try
         {
@@ -71,6 +80,13 @@
             // Not an error worth showing. The API client has already cleared the session and
             // raised SessionExpired; the sign-in redirect is on its way.
             _manifest = null;
+        }
+        catch (ApiException ex) when (ex.IsMisconfigured)
+        {
+            // Deliberately shown as the developer-facing message rather than the localised
+            // network error. A resident never sees this — it only happens when the console is
+            // pointed at the wrong host, and whoever sees it needs the actual reason.
+            _configurationError = ex.Message;
         }
         catch (Exception)
         {

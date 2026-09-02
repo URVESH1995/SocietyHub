@@ -29,8 +29,16 @@ builder.Services.AddSingleton<IQueueStore, NoOpQueueStore>();
 
 // The gateway, which is the only publicly reachable component. Everything behind it is
 // reachable solely through service discovery inside the cluster network.
+//
+// Deliberately not defaulted to HostEnvironment.BaseAddress. That default looks harmless and
+// is never correct: the console's own origin serves index.html for any unmatched path, so
+// every API call came back as HTTP 200 with a page of HTML, JSON parsing failed, and the UI
+// reported "cannot reach SocietyHub" — a network error shown for what was a missing setting.
+// Failing at start-up with the reason is worth more than a running app that lies about why.
 var gateway = builder.Configuration["Gateway:BaseAddress"]
-              ?? builder.HostEnvironment.BaseAddress;
+              ?? throw new InvalidOperationException(
+                  "Gateway:BaseAddress is not configured. Set it in wwwroot/appsettings.json; "
+                  + "the AppHost pins the gateway to http://localhost:5280/ for local runs.");
 
 builder.Services.AddSocietyHubClient(
     new Uri(gateway),

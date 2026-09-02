@@ -1,4 +1,5 @@
 using System.Reflection;
+using SocietyHub.SharedKernel.Tenancy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -104,7 +105,15 @@ if (app.Environment.IsDevelopment())
 
     // Without this a fresh database is a dead end: every write endpoint needs a token, every
     // token needs a member, and the only way to create one is a write endpoint.
-    await DevelopmentSeed.SeedAsync(seedContext, seedLogger);
+    //
+    // Scoped explicitly, because the write-side tenant guard refuses an unscoped write to a
+    // society-owned table — correctly, since that is indistinguishable from a tenancy bug.
+    // There is no request here to carry a claim, so the seeder states which society it is
+    // acting for.
+    using (TenantScope.For(DemoData.SocietyId))
+    {
+        await DevelopmentSeed.SeedAsync(seedContext, seedLogger);
+    }
 }
 
 app.UseSocietyHubPlatform();

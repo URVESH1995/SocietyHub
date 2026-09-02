@@ -29,6 +29,48 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
+// CORS, which the comment above has always claimed this service terminates and which was
+// never actually implemented — the admin console is a Blazor WebAssembly app served from its
+// own origin, so every request it made was blocked at preflight before reaching a route.
+//
+// An allow-list from configuration rather than AllowAnyOrigin. The tokens here are Bearer, not
+// cookies, so a wildcard would not be exploitable today — but it becomes exploitable the
+// moment anybody adds a cookie, and that change would look entirely unrelated to this file.
+builder.Services.AddCors(options =>
+{
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? [];
+
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .WithHeaders(
+                  "Authorization",
+                  "Content-Type",
+                  "Accept-Language",
+
+                  // Without these two the browser strips them from the request and the
+                  // server silently loses replay protection and version reporting.
+                  "Idempotency-Key",
+                  "X-SocietyHub-Client")
+
+              // A browser hides every response header from script unless it is exposed. The
+              // deprecation headers exist so a client can warn someone their build is going
+              // out of support; unexposed, they arrive and are invisible.
+              .WithExposedHeaders(
+                  "Deprecation",
+                  "Sunset",
+                  "X-SocietyHub-Minimum-Version",
+                  "X-SocietyHub-Recommended-Version",
+                  "Retry-After")
+
+              // Caches the preflight so a busy screen does not double its request count.
+              .SetPreflightMaxAge(TimeSpan.FromHours(1));
+    });
+});
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -75,6 +117,12 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.MapDefaultEndpoints();
+
+// Before the rate limiter, so a rejected preflight still carries CORS headers. Without that
+// ordering a throttled browser client sees an opaque CORS failure instead of the 429 it could
+// actually back off from.
+app.UseCors();
+
 app.UseRateLimiter();
 
 app.MapGet("/", () => Results.Ok(new

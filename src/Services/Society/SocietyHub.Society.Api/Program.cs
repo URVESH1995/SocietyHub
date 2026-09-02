@@ -1,4 +1,5 @@
 using System.Reflection;
+using SocietyHub.SharedKernel.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using SocietyHub.Features;
@@ -70,9 +71,15 @@ if (app.Environment.IsDevelopment())
     await seedContext.Database.MigrateAsync();
 
     // Matches the demo users Identity seeds, so the flats their memberships point at exist.
-    await DevelopmentSeed.SeedAsync(
-        seedContext,
-        scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed"));
+    //
+    // Scoped explicitly for the same reason as Identity: there is no request here, and the
+    // write guard refuses an unscoped write to a society-owned table.
+    using (TenantScope.For(DevelopmentSeed.SocietyId))
+    {
+        await DevelopmentSeed.SeedAsync(
+            seedContext,
+            scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seed"));
+    }
 }
 
 app.UseSocietyHubPlatform();

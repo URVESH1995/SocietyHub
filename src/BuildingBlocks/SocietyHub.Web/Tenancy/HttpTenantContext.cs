@@ -22,9 +22,23 @@ public sealed class HttpTenantContext : ITenantContext
     {
         get
         {
-            var claim = _accessor.HttpContext?.User.FindFirst(SocietyHubClaims.SocietyId)?.Value;
+            var context = _accessor.HttpContext;
 
-            return Guid.TryParse(claim, out var societyId) ? societyId : null;
+            // Inside a request the claim is the only answer, and its absence is an absence —
+            // never a reason to consult ambient state. Falling back here would mean a value
+            // left behind by background work becoming a cross-tenant read on the next request
+            // that reuses the thread, which is the exact failure this whole design prevents.
+            if (context is not null)
+            {
+                var claim = context.User.FindFirst(SocietyHubClaims.SocietyId)?.Value;
+
+                return Guid.TryParse(claim, out var fromClaim) ? fromClaim : null;
+            }
+
+            // No request at all: seeding, outbox dispatch, a message consumer, a retention job.
+            // Those declare their society explicitly through TenantScope, which is greppable
+            // and bounded, rather than being silently unscoped and blocked by the write guard.
+            return TenantScope.CurrentSocietyId;
         }
     }
 
