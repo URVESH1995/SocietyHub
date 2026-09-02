@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "admin-web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Clients/SocietyHub.Admin.Web",
+        "--urls",
+        "http://localhost:5299"
+      ],
+      "port": 5299
+    }
+  ]
+}

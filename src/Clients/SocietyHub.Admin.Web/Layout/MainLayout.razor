@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject SocietyHubApiClient Api
 @inject LanguageService Language
+@inject NavigationManager Navigation
 
 @*
     The shell.
@@ -80,9 +81,17 @@
     private void OnLanguageChanged() => InvokeAsync(StateHasChanged);
 
     /// <summary>
-    /// Notices and complaint categories arrive already translated by the server, so switching
-    /// language has to refetch rather than only re-render — otherwise the labels change and
-    /// the content stays in the old language.
+    /// Reloads the page rather than re-rendering.
+    ///
+    /// Two reasons, and the first is not optional. Blazor WebAssembly resolves a culture's
+    /// satellite assemblies at start-up, so a culture set mid-session finds no loaded hi-IN
+    /// resources and quietly keeps rendering English — the switcher appears to work and
+    /// nothing changes. Program.cs applies the stored choice before RunAsync; this is what
+    /// makes that run again.
+    ///
+    /// The second reason would apply anyway: notices and complaint categories arrive already
+    /// translated from the server, so a language change has to refetch them or the labels
+    /// change while the content stays in the old language.
     /// </summary>
-    private async Task OnLanguageChangedAsync() => await LoadAsync();
+    private void OnLanguageChangedAsync() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
 }

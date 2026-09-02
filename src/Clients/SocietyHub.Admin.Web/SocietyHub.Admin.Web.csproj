@@ -6,6 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+
+    <!--
+      Blazor WebAssembly ships a trimmed ICU set by default, which does not include Hindi —
+      constructing CultureInfo("hi-IN") throws outright rather than degrading, so the app fails
+      to start rather than merely rendering the wrong language.
+
+      The cost is real: full globalization data adds roughly 1.5 MB to the initial download.
+      It is accepted because this is the desk-bound admin console on a broadband connection,
+      and because a half-supported language is worse than none. The mobile apps do not pay it —
+      a MAUI package carries its own ICU data already.
+    -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>

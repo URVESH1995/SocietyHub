@@ -1,4 +1,5 @@
 @using SocietyHub.SharedKernel.Globalization
+@implements IDisposable
 @inject LanguageService Language
 
 @*
@@ -32,6 +33,21 @@
 
 @code {
     private bool _switching;
+
+    /// <summary>
+    /// Subscribes to the service rather than relying on the parent to re-render.
+    ///
+    /// The shell resolves the language in its own async initialisation, which finishes after
+    /// this component has already rendered once against the default. Without this subscription
+    /// the buttons keep showing English as current while the rest of the page is in Hindi —
+    /// which is worse than a cosmetic bug, because the control that changes the language is
+    /// the one lying about what the language is.
+    /// </summary>
+    protected override void OnInitialized() => Language.LanguageChanged += OnLanguageChanged;
+
+    public void Dispose() => Language.LanguageChanged -= OnLanguageChanged;
+
+    private void OnLanguageChanged() => InvokeAsync(StateHasChanged);
 
     /// <summary>
     /// Raised after the language changes, so a shell that needs to reload server-rendered

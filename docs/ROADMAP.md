@@ -17,6 +17,96 @@ source of truth, not any external board.
 
 ---
 
+## Where the project stands
+
+**Phase 1 is complete** as of 2 September 2026, except for two client tasks explicitly marked
+in progress. What exists is a working backend that boots, and three client apps that build.
+
+| | Count |
+| --- | --- |
+| Services | 6 — Identity, Society, Gate, Helpdesk, Notification, Notice |
+| Client apps | 3 — Admin web (Blazor WASM PWA), Resident (MAUI), Guard (MAUI) |
+| Building blocks | 8 — SharedKernel, Contracts, Persistence, Messaging, Caching, Web, Features, ServiceDefaults |
+| Tests | **300 passing**, 4 requiring Docker |
+| Release build | Clean with `-warnaserror`, zero warnings |
+
+### What has actually been proven, and what has only been built
+
+The distinction matters more than the task count. A ticked box means the code exists and its
+unit tests pass; it does not by itself mean anyone has watched it work.
+
+| Claim | Evidence |
+| --- | --- |
+| Tenant isolation holds | **Proven.** 16 unit tests plus 4 integration tests against real SQL Server 2022 — filtered SQL, cross-tenant reads, rowversion concurrency, Devanagari collation. Layer 5 (row-level security) separately proven against a live instance, including raw SQL that bypasses EF. |
+| The topology boots | **Proven** (`P0-23`). SQL Server, Redis and RabbitMQ healthy; the gateway routes to Identity through YARP service discovery. |
+| Domain rules are correct | **Unit-tested.** SLA clocks, quiet hours, poll quorum, notification cost policy, entitlement resolution, the offline queue. |
+| The six services run together end to end | **Not yet.** `scripts/smoke-test.sh` exists and has never been run to completion. This is the single largest gap. |
+| Anything renders in a browser or on a phone | **Not yet.** The apps compile; no screen has been opened. See "How to verify" below. |
+
+### The two Phase 1 tasks still open
+
+Both build and both have their hard parts finished and tested. What is missing is the
+surrounding UI, which is real work and is not hidden:
+
+- **`P1-54` Resident app** — needs sign-in screens and push registration. Secure token
+  storage, refresh rotation and the shared components are done.
+- **`P1-55` Guard app** — needs camera and QR capture. The typed pass-code path works, and the
+  offline queue that makes the whole app viable is complete and covered by 11 tests.
+
+---
+
+## How to verify
+
+Three levels, cheapest first. Each answers a different question.
+
+### 1. Does the code do what it claims? (no Docker, ~10 seconds)
+
+```bash
+dotnet test SocietyHub.slnx
+```
+
+300 tests. Four will report as skipped without Docker; that is expected and correct.
+
+### 2. Is the isolation real against a real database? (Docker required, ~2 minutes)
+
+Start Docker Desktop, then:
+
+```bash
+dotnet test tests/SocietyHub.IntegrationTests
+```
+
+Starts SQL Server 2022, RabbitMQ and Redis in containers and runs the four tests that cannot
+be faked by SQLite. `Skipped: 0` in the output is what tells you they actually ran.
+
+### 3. Can I see it? (Docker required)
+
+```bash
+./scripts/run.sh
+```
+
+Brings up the full stack and opens the **Aspire dashboard** — a live view of all six services,
+their health, logs, traces and the RabbitMQ queues. This is the first real UI, and it is a
+genuine one: it shows the priority lanes with messages moving through them.
+
+Each service also serves interactive API documentation at `/scalar/v1`, where you can execute
+requests against the running system without writing any client code.
+
+The admin console runs separately:
+
+```bash
+dotnet run --project src/Clients/SocietyHub.Admin.Web
+```
+
+**A caveat worth stating plainly:** the console signs in against Identity, and the sign-in
+screens are the part of `P1-54` that is not built. Until they are, the console renders its
+shell and reports that it cannot reach the API — which is honest behaviour, but it is not a
+demo. The Scalar pages are currently the better way to see the system work.
+
+See [RUNNING.md](RUNNING.md) for prerequisites and [CLIENTS.md](CLIENTS.md) for building the
+mobile apps.
+
+---
+
 ## Locked decisions
 
 | Decision | Choice |
@@ -370,19 +460,57 @@ Valuable, deliberately deferred.
 
 ## Critical path
 
-Phase 1 has one ordering constraint that matters. **`P1-01` through `P1-10` block almost
-everything else** — outbox, idempotency, messaging lanes and auth are the substrate the four
-domain services are written against. Building a domain service first and retrofitting the
-outbox means rewriting every publish call site.
+### Phase 1 — done, and what the ordering taught
 
-Recommended order:
+`P1-01` through `P1-10` blocked almost everything else: outbox, idempotency, messaging lanes
+and auth are the substrate the six domain services are written against. Building a domain
+service first and retrofitting the outbox would have meant rewriting every publish call site.
+That held — nothing had to be unpicked.
+
+The order actually followed:
 
 ```
 P0-23 (Docker)  →  P1-01..P1-10 (cross-cutting)  →  P1-11..P1-19 (Identity)
    →  P1-20..P1-26 (Society)  →  P1-27..P1-36 (Gate)  →  P1-37..P1-43 (Helpdesk)
-   →  P1-44..P1-49 (Notification)  →  P1-52..P1-57 (Clients)
+   →  P1-44..P1-49 (Notification)  →  P1-50..P1-51 (Notice)
+   →  P1-61..P1-65 (entitlement)  →  P1-58..P1-60 (testing, CI)  →  P1-52..P1-57 (clients)
 ```
 
-Society precedes Gate because Gate resolves flats from it. Notification comes after the
-services that publish the events it consumes, so its templates are written against real
-payloads rather than guesses.
+Society preceded Gate because Gate resolves flats from it. Notification came after the
+services publishing the events it consumes, so its templates were written against real
+payloads rather than guesses. Entitlement was pulled forward ahead of the clients so the apps
+could be built feature-gated from the start instead of retrofitted.
+
+One thing worth carrying forward: **everything built and every test passed while no service
+could actually start.** Five startup bugs — unregistered messaging, a JWT authority triggering
+OIDC discovery, no JWT configuration anywhere, an unmapped tenant property, and no bootstrap
+path into a fresh database — were invisible to the entire suite. A green build is not a
+running system, and the smoke test that would have caught it still has not been run.
+
+### Phase 2 — the ordering that matters next
+
+```
+P2-01..P2-04 (Vendor)  →  P2-05..P2-11 (catalogue, drives, saga)
+   →  P2-12..P2-14 (Scheduling)  →  P2-15..P2-18 (Payments)  →  P2-19..P2-22 (verification)
+```
+
+The saga (`P2-10`) carries the real risk. Quorum, slab repricing and refunds are one
+distributed transaction across four services, and the compensation path — money already taken
+when quorum is missed at cut-off — has to be built alongside the happy path rather than after
+it. A saga whose compensation is retrofitted is a saga that has already lost someone's money
+once.
+
+Payments come late deliberately. A drive that reaches quorum without payment is still worth
+demonstrating; a payment integration with no drive behind it is not.
+
+### Before any of Phase 2
+
+Two Phase 1 debts and one Phase 4 prerequisite are worth closing first, because each gets more
+expensive with every service added:
+
+1. **Run `scripts/smoke-test.sh` to completion.** Six services, never yet exercised together.
+   This is the largest single unknown in the project.
+2. **Finish `P1-54` and `P1-55`** — sign-in and camera capture — so the clients are
+   demonstrable rather than merely compilable.
+3. **`P4-01` and `P4-02`, dashboards and alerting.** You cannot operate a 99.9% SLO without
+   them, and retrofitting instrumentation across ten services costs more than across six.

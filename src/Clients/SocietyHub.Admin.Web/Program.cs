@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
@@ -7,6 +8,7 @@ using SocietyHub.Admin.Web.Platform;
 using SocietyHub.Client.Shared;
 using SocietyHub.Client.Shared.Api;
 using SocietyHub.Client.Shared.Localization;
+using SocietyHub.SharedKernel.Globalization;
 
 // SocietyHub admin and committee console.
 //
@@ -40,4 +42,31 @@ builder.Services.AddSocietyHubClient(
         "web",
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"));
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+// Blazor WebAssembly resolves a culture's satellite assemblies when the app starts, not when
+// the culture changes. Setting CurrentUICulture mid-session therefore looks like it works and
+// silently keeps rendering English — the resource lookup finds no loaded hi-IN assembly and
+// falls back to the neutral one.
+//
+// So the stored choice is applied here, before RunAsync, and MainLayout reloads the page when
+// someone switches. The mobile builds do not need this: a MAUI app ships every satellite
+// assembly in its package, so switching there is immediate.
+await ApplyStoredLanguageAsync(host);
+
+await host.RunAsync();
+
+static async Task ApplyStoredLanguageAsync(WebAssemblyHost host)
+{
+    await using var scope = host.Services.CreateAsyncScope();
+
+    var stored = await scope.ServiceProvider.GetRequiredService<ILanguageStore>().GetAsync();
+
+    var tag = LanguageTag.FromHeaderOrDefault(stored);
+    var culture = new CultureInfo(tag.Value);
+
+    // Both: CurrentUICulture picks the resource file, CurrentCulture formats dates and
+    // numbers. Setting only the first gives a resident Hindi text over US-format dates.
+    CultureInfo.DefaultThreadCurrentCulture = culture;
+    CultureInfo.DefaultThreadCurrentUICulture = culture;
+}

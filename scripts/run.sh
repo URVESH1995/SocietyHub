@@ -12,12 +12,20 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # Docker Desktop installs per-user on Windows and does not always land on PATH.
+#
+# Every variable here is defaulted with :- because `set -u` makes an unset one fatal, and Git
+# Bash on Windows sets USERNAME rather than USER — which killed this script on line one for
+# anyone running it from Git Bash, before it printed a single word of diagnosis.
+WINDOWS_USER="${USER:-${USERNAME:-}}"
+
 for candidate in \
-  "$LOCALAPPDATA/Programs/DockerDesktop/resources/bin" \
-  "/c/Users/$USER/AppData/Local/Programs/DockerDesktop/resources/bin" \
+  "${LOCALAPPDATA:-}/Programs/DockerDesktop/resources/bin" \
+  "/c/Users/${WINDOWS_USER}/AppData/Local/Programs/DockerDesktop/resources/bin" \
   "/c/Program Files/Docker/Docker/resources/bin"
 do
-  [ -d "$candidate" ] && PATH="$candidate:$PATH"
+  # The `|| true` matters: `set -e` treats a failed test as fatal, so the first missing
+  # candidate would abort the loop and never reach the one that exists.
+  [ -d "$candidate" ] && PATH="$candidate:$PATH" || true
 done
 export PATH
 
