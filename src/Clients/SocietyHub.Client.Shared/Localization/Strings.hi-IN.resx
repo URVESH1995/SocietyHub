@@ -127,4 +127,23 @@
   <data name="Error_SessionExpired"><value>आपका सत्र समाप्त हो गया है। कृपया फिर से साइन इन करें।</value></data>
   <data name="Error_UpgradeRequired"><value>यह संस्करण अब समर्थित नहीं है। कृपया ऐप अपडेट करें।</value></data>
   <data name="Error_FeatureNotEnabled"><value>आपकी सोसाइटी के पास यह सुविधा नहीं है।</value></data>
+
+  <!-- Sign-in -->
+  <data name="SignIn_Title"><value>साइन इन करें</value></data>
+  <data name="SignIn_PhoneLabel"><value>मोबाइल नंबर</value></data>
+  <data name="SignIn_PhoneHint"><value>वह नंबर जो आपकी सोसाइटी में दर्ज है</value></data>
+  <data name="SignIn_SendCode"><value>कोड भेजें</value></data>
+  <data name="SignIn_CodeLabel"><value>छह अंकों का कोड</value></data>
+  <data name="SignIn_CodeSentTo"><value>हमने {0} पर कोड भेजा है</value></data>
+  <data name="SignIn_Verify"><value>साइन इन करें</value></data>
+  <data name="SignIn_ChangeNumber"><value>दूसरा नंबर इस्तेमाल करें</value></data>
+  <data name="SignIn_Resend"><value>दोबारा भेजें</value></data>
+  <data name="SignIn_ChooseSociety"><value>कौन सी सोसाइटी?</value></data>
+  <data name="SignIn_SignedInAs"><value>{0} के रूप में साइन इन</value></data>
+  <data name="SignIn_DevCode"><value>डेवलपमेंट बिल्ड — आपका कोड {0} है</value></data>
+  <data name="Error_InvalidCode"><value>यह कोड सही नहीं है। जाँचकर दोबारा कोशिश करें।</value></data>
+  <data name="Error_TooManyAttempts"><value>बहुत अधिक कोशिशें। नया कोड मंगाएँ।</value></data>
+  <data name="Error_UnknownPhone"><value>यह नंबर किसी सोसाइटी में दर्ज नहीं है।</value></data>
+  <data name="Error_AccountDisabled"><value>यह खाता निलंबित कर दिया गया है। कृपया अपने सोसाइटी कार्यालय से संपर्क करें।</value></data>
+  <data name="Error_Forbidden"><value>आपकी भूमिका को इसकी अनुमति नहीं है।</value></data>
 </root>

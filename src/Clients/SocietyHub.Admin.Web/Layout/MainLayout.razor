@@ -22,6 +22,17 @@
         <main>
             <div class="top-row px-4">
                 <LanguageSwitcher OnChanged="OnLanguageChangedAsync" />
+
+                @if (_me is not null)
+                {
+                    <span class="sh-shell__user">
+                        @string.Format(Strings.SignIn_SignedInAs, _me.FullName)
+                    </span>
+
+                    <button type="button" class="sh-shell__signout" @onclick="SignOutAsync">
+                        @Strings.Common_SignOut
+                    </button>
+                }
             </div>
 
             <article class="content px-4">
@@ -55,13 +66,33 @@
     private FeatureManifestView? _manifest;
     private bool _loadFailed;
     private string? _configurationError;
+    private MeView? _me;
 
     protected override async Task OnInitializedAsync()
     {
         Language.LanguageChanged += OnLanguageChanged;
 
         await Language.InitialiseAsync(societyDefault: null);
+
+        // Checked before anything else. Loading the manifest first would fire a 401 that the
+        // API client handles by clearing the session — which is harmless but produces an
+        // error flash on every visit by a signed-out person.
+        if (!await Api.IsSignedInAsync())
+        {
+            Navigation.NavigateTo("sign-in");
+            return;
+        }
+
         await LoadAsync();
+    }
+
+    private async Task SignOutAsync()
+    {
+        await Api.SignOutAsync();
+
+        // forceLoad, so the cascaded manifest and every cached page state go with the session
+        // rather than lingering for the next person at a shared machine.
+        Navigation.NavigateTo(Navigation.BaseUri + "sign-in", forceLoad: true);
     }
 
     public void Dispose() => Language.LanguageChanged -= OnLanguageChanged;
@@ -74,6 +105,7 @@
         try
         {
             _manifest = await Api.GetFeaturesAsync();
+            _me = await Api.GetMeAsync();
         }
         catch (ApiException ex) when (ex.IsUnauthorised)
         {

@@ -18,6 +18,8 @@ internal sealed class FakeCurrentUser : ICurrentUser
 
     public string? Email => "resident@societyhub.test";
 
+    public string? DisplayName { get; set; } = "Amit Sharma";
+
     public bool IsAuthenticated => UserId is not null;
 
     public IReadOnlyCollection<string> Roles { get; set; } = ["Resident"];

@@ -221,6 +221,10 @@ public static class AuthEndpoints
         Microsoft.AspNetCore.Http.Results.Ok(new
         {
             userId = currentUser.UserId,
+
+            // A client showing "signed in as" needs a name, and email is null for every
+            // resident who registered by phone — which is nearly all of them.
+            fullName = currentUser.DisplayName,
             email = currentUser.Email,
             roles = currentUser.Roles,
             societyId = tenant.SocietyId,

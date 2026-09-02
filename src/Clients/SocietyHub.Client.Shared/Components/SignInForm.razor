@@ -1,0 +1,258 @@
+@inject SocietyHubApiClient Api
+
+@*
+    Sign-in, shared by all three apps.
+
+    Phone and a one-time code, with no password anywhere. That is not a shortcut: a society's
+    residents include people who will never manage a password, the phone number is already the
+    identifier the society's records are keyed on, and a password reset flow would need the
+    same OTP anyway. The one thing it costs is that losing the number loses the account, which
+    is why re-registration is a committee action rather than a self-service one.
+
+    Three steps, and the third only sometimes: number, code, and — for a person who belongs to
+    more than one society — which one they are signing in to.
+*@
+
+<div class="sh-signin">
+    <h1 class="sh-signin__title">@Strings.SignIn_Title</h1>
+
+    @if (_error is not null)
+    {
+        <div class="sh-signin__error" role="alert">@_error</div>
+    }
+
+    @if (_step == Step.Phone)
+    {
+        <label class="sh-signin__label" for="phone">@Strings.SignIn_PhoneLabel</label>
+        <p class="sh-signin__hint">@Strings.SignIn_PhoneHint</p>
+
+        @* type="tel" so a phone shows a numeric keypad. On a gate tablet this is the
+           difference between a two-second entry and hunting through a full keyboard. *@
+        <input id="phone"
+               type="tel"
+               inputmode="tel"
+               autocomplete="tel"
+               class="sh-signin__input"
+               placeholder="+91 90000 00002"
+               disabled="@_busy"
+               @bind="_phone"
+               @bind:event="oninput"
+               @onkeydown="OnPhoneKeyDown" />
+
+        <button type="button"
+                class="sh-signin__primary"
+                disabled="@(_busy || string.IsNullOrWhiteSpace(_phone))"
+                @onclick="RequestCodeAsync">
+            @(_busy ? Strings.Common_Loading : Strings.SignIn_SendCode)
+        </button>
+    }
+    else if (_step == Step.Code)
+    {
+        <p class="sh-signin__sent">@string.Format(Strings.SignIn_CodeSentTo, _phone)</p>
+
+        @if (_developmentCode is not null)
+        {
+            @* Development builds only. The server sends this because there is no telecom
+               account behind a local run; a production build never populates it. *@
+            <p class="sh-signin__devcode">
+                @string.Format(Strings.SignIn_DevCode, _developmentCode)
+            </p>
+        }
+
+        <label class="sh-signin__label" for="code">@Strings.SignIn_CodeLabel</label>
+
+        <input id="code"
+               type="text"
+               inputmode="numeric"
+               autocomplete="one-time-code"
+               maxlength="6"
+               class="sh-signin__input sh-signin__input--code"
+               disabled="@_busy"
+               @bind="_code"
+               @bind:event="oninput"
+               @onkeydown="OnCodeKeyDown" />
+
+        <button type="button"
+                class="sh-signin__primary"
+                disabled="@(_busy || _code.Length < 4)"
+                @onclick="VerifyAsync">
+            @(_busy ? Strings.Common_Loading : Strings.SignIn_Verify)
+        </button>
+
+        <div class="sh-signin__secondary">
+            <button type="button" disabled="@_busy" @onclick="RequestCodeAsync">
+                @Strings.SignIn_Resend
+            </button>
+            <button type="button" disabled="@_busy" @onclick="StartOver">
+                @Strings.SignIn_ChangeNumber
+            </button>
+        </div>
+    }
+    else
+    {
+        <p class="sh-signin__sent">@Strings.SignIn_ChooseSociety</p>
+
+        @foreach (var society in _societies)
+        {
+            <button type="button"
+                    class="sh-signin__society"
+                    disabled="@_busy"
+                    @onclick="() => VerifyAsync(society.SocietyId)">
+                @society.Role
+            </button>
+        }
+    }
+</div>
+
+@code {
+    private enum Step { Phone, Code, ChooseSociety }
+
+    private Step _step = Step.Phone;
+    private string _phone = string.Empty;
+    private string _code = string.Empty;
+    private string? _developmentCode;
+    private string? _error;
+    private bool _busy;
+    private IReadOnlyList<SocietyOptionView> _societies = [];
+
+    /// <summary>Raised once tokens are held, so the shell can leave the sign-in screen.</summary>
+    [Parameter]
+    public EventCallback OnSignedIn { get; set; }
+
+    /// <summary>Optional prefill, so a mobile app can offer the last number used.</summary>
+    [Parameter]
+    public string? InitialPhone { get; set; }
+
+    protected override void OnInitialized() => _phone = InitialPhone ?? string.Empty;
+
+    private Task OnPhoneKeyDown(KeyboardEventArgs e) =>
+        e.Key == "Enter" && !_busy ? RequestCodeAsync() : Task.CompletedTask;
+
+    private Task OnCodeKeyDown(KeyboardEventArgs e) =>
+        e.Key == "Enter" && !_busy ? VerifyAsync() : Task.CompletedTask;
+
+    private async Task RequestCodeAsync()
+    {
+        if (_busy || string.IsNullOrWhiteSpace(_phone))
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var challenge = await Api.RequestOtpAsync(Normalise(_phone));
+
+            _developmentCode = challenge.DevelopmentCode;
+            _code = string.Empty;
+            _step = Step.Code;
+        }
+        catch (ApiException ex)
+        {
+            _error = Describe(ex);
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task VerifyAsync() => VerifyAsync(null);
+
+    private async Task VerifyAsync(Guid? societyId)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var result = await Api.VerifyOtpAsync(Normalise(_phone), _code.Trim(), societyId);
+
+            if (result.NeedsSocietyChoice)
+            {
+                // A person who lives in one society and sits on another's committee. Asking is
+                // the only correct answer — picking for them silently scopes every subsequent
+                // request to the wrong place.
+                _societies = result.Societies;
+                _step = Step.ChooseSociety;
+                return;
+            }
+
+            await OnSignedIn.InvokeAsync();
+        }
+        catch (ApiException ex)
+        {
+            _error = Describe(ex);
+
+            // A wrong code leaves the field populated, which invites a second wrong attempt
+            // against a three-attempt cap.
+            _code = string.Empty;
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void StartOver()
+    {
+        _step = Step.Phone;
+        _code = string.Empty;
+        _developmentCode = null;
+        _error = null;
+    }
+
+    /// <summary>
+    /// Maps the server's error codes to localised text.
+    ///
+    /// Branching on the code rather than the message, because the message is English prose
+    /// written for a developer and is not what a resident should read.
+    /// </summary>
+    private static string Describe(ApiException ex) => ex.Code switch
+    {
+        // These strings are the codes the Identity service actually emits, checked against it
+        // rather than guessed. A mapping that misses turns a precise server message into
+        // "something went wrong", which is the least useful thing a sign-in screen can say.
+        "Otp.Invalid" or "Otp.WrongLength" or "Otp.NotNumeric" => Strings.Error_InvalidCode,
+        "Otp.TooManyRequests" => Strings.Error_TooManyAttempts,
+        "Auth.NotRegistered" or "Auth.NoMembership" or "User.NotFound" => Strings.Error_UnknownPhone,
+        "Auth.SessionExpired" or "Auth.InvalidRefreshToken" => Strings.Error_SessionExpired,
+
+        // The account exists and was deliberately switched off. Saying "not registered" would
+        // send someone to re-register, which will not work and wastes a committee's time.
+        "Auth.AccountDisabled" => Strings.Error_AccountDisabled,
+
+        _ when ex.IsUpgradeRequired => Strings.Error_UpgradeRequired,
+        _ when ex.IsMisconfigured => ex.Message,
+        _ => Strings.Error_Generic,
+    };
+
+    /// <summary>
+    /// Strips spaces and dashes people type out of habit, and assumes India when no country
+    /// code is given — the server stores E.164 and would otherwise reject a number that is
+    /// correct in every way a resident would recognise.
+    /// </summary>
+    private static string Normalise(string phone)
+    {
+        var trimmed = new string([.. phone.Where(c => char.IsDigit(c) || c == '+')]);
+
+        return trimmed.StartsWith('+') ? trimmed
+            : trimmed.Length == 10 ? "+91" + trimmed
+            : "+" + trimmed;
+    }
+}

@@ -167,7 +167,7 @@ public static class NoticeEndpoints
             Guid.CreateVersion7(),
             societyId,
             currentUser.RequireUserId(),
-            currentUser.Email ?? "Committee",
+            currentUser.DisplayName ?? "Committee",
             request.Category,
             request.TitleEn,
             request.BodyEn,

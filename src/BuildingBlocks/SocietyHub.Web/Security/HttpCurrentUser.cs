@@ -27,6 +27,9 @@ public sealed class HttpCurrentUser : ICurrentUser
     public string? Email => Principal?.FindFirst(ClaimTypes.Email)?.Value
                             ?? Principal?.FindFirst("email")?.Value;
 
+    public string? DisplayName => Principal?.FindFirst(ClaimTypes.Name)?.Value
+                                  ?? Principal?.FindFirst("name")?.Value;
+
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
 
     public IReadOnlyCollection<string> Roles =>

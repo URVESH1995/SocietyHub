@@ -1,0 +1,39 @@
+@page "/sign-in"
+@layout SignInLayout
+@inject NavigationManager Navigation
+
+<PageTitle>SocietyHub</PageTitle>
+
+@*
+    Deliberately its own layout, with no navigation and no feature manifest. The shell needs a
+    token to fetch anything, so rendering it around a sign-in screen means every load fires a
+    round of 401s before the person has had a chance to do the one thing this page is for.
+*@
+
+<div class="sh-signin-page">
+    <SignInForm OnSignedIn="OnSignedInAsync" />
+
+    @*
+        OnChanged is not optional here even though the switcher looks self-contained. Blazor
+        WebAssembly resolves satellite assemblies at start-up, so a culture change only takes
+        effect on reload — without this the buttons flip and the page stays in English. This is
+        also the screen where it matters most: it is the first one a resident sees, and the one
+        where someone who cannot read English needs the switch to visibly work.
+    *@
+    <LanguageSwitcher OnChanged="Reload" />
+</div>
+
+@code {
+    /// <summary>
+    /// Reloads rather than navigating.
+    ///
+    /// Everything the shell holds — the feature manifest, the cascaded society — was resolved
+    /// while signed out and is wrong now. A full load is the honest way to rebuild it, and
+    /// signing in is a once-a-session event where the cost does not matter.
+    /// </summary>
+    private void OnSignedInAsync() =>
+        Navigation.NavigateTo(Navigation.BaseUri, forceLoad: true);
+
+    /// <summary>Re-enters the app at this same page so the new culture is loaded.</summary>
+    private void Reload() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+}

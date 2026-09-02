@@ -87,6 +87,13 @@ else
             // what to actually do about it.
             _error = Strings.Error_SessionExpired;
         }
+        catch (ApiException ex) when (ex.IsForbidden)
+        {
+            // The server is reachable and deliberately said no — a guard signing into a
+            // committee console, for instance. Reporting a network error here sends someone
+            // to check their connection over a permission they will never have.
+            _error = Strings.Error_Forbidden;
+        }
         catch (ApiException ex) when (ex.IsMisconfigured)
         {
             // Developer-facing on purpose — it only happens when the console is pointed at

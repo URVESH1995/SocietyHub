@@ -41,7 +41,7 @@ unit tests pass; it does not by itself mean anyone has watched it work.
 | The topology boots | **Proven** (`P0-23`). SQL Server, Redis and RabbitMQ healthy; the gateway routes to Identity through YARP service discovery. |
 | Domain rules are correct | **Unit-tested.** SLA clocks, quiet hours, poll quorum, notification cost policy, entitlement resolution, the offline queue. |
 | The six services run together end to end | **Proven**, 2 September 2026. All six start under Aspire, the gateway routes to every one of them, and `/api/v1/{service}/info` returns 200 through it. Getting there took six fixes — see the commit for what was actually broken. |
-| Anything renders in a browser or on a phone | **Browser, yes.** The admin console renders, switches between English and Hindi, and reaches the live gateway. It then stops at a 401, because sign-in is the part of `P1-54` that is not built. The mobile apps compile but no screen has been opened. |
+| Anything renders in a browser or on a phone | **Browser, yes, end to end.** Sign in with a phone and a one-time code, in English or Hindi, against the live stack — verified for the resident, admin and guard demo users. Feature-gated navigation populates from the real entitlement manifest. The mobile apps compile but no screen has been opened. |
 
 ### The two Phase 1 tasks still open
 
@@ -281,7 +281,7 @@ region-pluggable residency — genuinely can wait.
 ### Client applications
 - [x] `P1-52` **Shared Razor class library** — components, view models, API client, offline queue
 - [x] `P1-53` **API client SDK** — hand-written, with an OpenAPI drift-check script (see note)
-- [~] `P1-54` **Resident app** — MAUI Blazor Hybrid, builds for Android; sign-in and push pending
+- [~] `P1-54` **Resident app** — MAUI Blazor Hybrid, builds for Android; sign-in done, push pending
 - [~] `P1-55` **Guard app** — Android tablet with a persisted offline queue; camera/QR pending
 - [x] `P1-56` **Admin and committee web** — Blazor WASM PWA, feature-gated navigation
 - [x] `P1-57` **Localisation** — en-IN and hi-IN resources, parity-tested, native-script switcher

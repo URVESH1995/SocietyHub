@@ -126,4 +126,23 @@
   <data name="Error_SessionExpired"><value>Your session has expired. Please sign in again.</value></data>
   <data name="Error_UpgradeRequired"><value>This version is no longer supported. Please update the app.</value></data>
   <data name="Error_FeatureNotEnabled"><value>Your society does not have this feature.</value></data>
+
+  <!-- Sign-in -->
+  <data name="SignIn_Title"><value>Sign in</value></data>
+  <data name="SignIn_PhoneLabel"><value>Mobile number</value></data>
+  <data name="SignIn_PhoneHint"><value>The number registered with your society</value></data>
+  <data name="SignIn_SendCode"><value>Send code</value></data>
+  <data name="SignIn_CodeLabel"><value>Six-digit code</value></data>
+  <data name="SignIn_CodeSentTo"><value>We sent a code to {0}</value></data>
+  <data name="SignIn_Verify"><value>Sign in</value></data>
+  <data name="SignIn_ChangeNumber"><value>Use a different number</value></data>
+  <data name="SignIn_Resend"><value>Send it again</value></data>
+  <data name="SignIn_ChooseSociety"><value>Which society?</value></data>
+  <data name="SignIn_SignedInAs"><value>Signed in as {0}</value></data>
+  <data name="SignIn_DevCode"><value>Development build — your code is {0}</value></data>
+  <data name="Error_InvalidCode"><value>That code is not right. Check it and try again.</value></data>
+  <data name="Error_TooManyAttempts"><value>Too many attempts. Request a new code.</value></data>
+  <data name="Error_UnknownPhone"><value>That number is not registered with any society.</value></data>
+  <data name="Error_AccountDisabled"><value>This account has been suspended. Please contact your society office.</value></data>
+  <data name="Error_Forbidden"><value>Your role does not have access to this.</value></data>
 </root>

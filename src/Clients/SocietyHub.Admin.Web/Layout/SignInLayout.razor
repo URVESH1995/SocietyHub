@@ -1,0 +1,13 @@
+@inherits LayoutComponentBase
+
+@*
+    The layout for a signed-out visitor: the page and nothing else.
+
+    No navigation, no feature manifest, no API calls of any kind. The main layout cannot serve
+    this purpose because everything it does needs a token — rendering it around a sign-in form
+    means a burst of 401s on every load, before the person has had a chance to sign in.
+*@
+
+<main class="sh-shell sh-shell--anonymous">
+    @Body
+</main>

@@ -55,6 +55,13 @@ public sealed class ApiException : Exception
     public bool IsUnauthorised => StatusCode == HttpStatusCode.Unauthorized;
 
     /// <summary>
+    /// The caller is known and not allowed. Distinct from IsUnauthorised, which means they are
+    /// not known — the first is answered by signing in, the second never is, and telling a
+    /// guard to sign in again when their role simply lacks the permission is a loop.
+    /// </summary>
+    public bool IsForbidden => StatusCode == HttpStatusCode.Forbidden;
+
+    /// <summary>
     /// The client reached something that is not the API. Almost always a misconfigured base
     /// address; worth distinguishing from a network failure because the fixes are unrelated.
     /// </summary>
@@ -92,6 +99,107 @@ public sealed class SocietyHubApiClient
 
     /// <summary>Raised when the session is gone and the shell must return to sign-in.</summary>
     public event Func<Task>? SessionExpired;
+
+    // ---- authentication ------------------------------------------------
+
+    /// <summary>
+    /// Asks for a code. Unauthenticated by definition, so it deliberately does not go through
+    /// the refresh-on-401 path — a 401 here means the phone was rejected, not that a session
+    /// lapsed, and retrying with a refresh token nobody has would be nonsense.
+    /// </summary>
+    public async Task<OtpChallengeView> RequestOtpAsync(
+        string phoneNumber, CancellationToken ct = default)
+    {
+        using var content = JsonContent.Create(new { phoneNumber }, options: Json);
+        using var response = await _http.PostAsync("api/v1/identity/auth/otp/request", content, ct);
+
+        await ThrowIfFailedAsync(response, "otp/request", ct);
+        EnsureJson(response, "otp/request");
+
+        return await response.Content.ReadFromJsonAsync<OtpChallengeView>(Json, ct)
+               ?? throw new ApiException(
+                   response.StatusCode, "response.empty", "The server returned no challenge.");
+    }
+
+    /// <summary>
+    /// Verifies a code and, when the phone belongs to exactly one society, signs in.
+    ///
+    /// The response is one of two shapes on the same 200 — tokens, or a list of societies to
+    /// choose from — so it is parsed by looking for the discriminating field rather than by
+    /// deserialising into a type and hoping. Getting this wrong strands every multi-society
+    /// resident on a screen that appears to do nothing.
+    /// </summary>
+    public async Task<SignInResultView> VerifyOtpAsync(
+        string phoneNumber, string code, Guid? societyId = null, CancellationToken ct = default)
+    {
+        using var content = JsonContent.Create(
+            new { phoneNumber, code, societyId }, options: Json);
+
+        using var response = await _http.PostAsync("api/v1/identity/auth/otp/verify", content, ct);
+
+        await ThrowIfFailedAsync(response, "otp/verify", ct);
+        EnsureJson(response, "otp/verify");
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var root = document.RootElement;
+
+        if (root.TryGetProperty("accessToken", out _))
+        {
+            var tokens = root.Deserialize<TokenPairView>(Json)!;
+
+            // Persisted here rather than by the caller. A sign-in screen that forgets this step
+            // appears to succeed and then fails on the next request, which is a bug nobody
+            // attributes to the screen.
+            await _tokens.SaveAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresAtUtc);
+
+            return new SignInResultView { Tokens = tokens };
+        }
+
+        return new SignInResultView
+        {
+            UserId = root.TryGetProperty("userId", out var id) ? id.GetGuid() : null,
+            FullName = root.TryGetProperty("fullName", out var name) ? name.GetString() : null,
+            Societies = root.TryGetProperty("societies", out var list)
+                ? list.Deserialize<List<SocietyOptionView>>(Json) ?? []
+                : [],
+        };
+    }
+
+    /// <summary>Who the current token says the caller is.</summary>
+    public Task<MeView> GetMeAsync(CancellationToken ct = default) =>
+        GetAsync<MeView>("api/v1/identity/auth/me", ct);
+
+    /// <summary>
+    /// Signs out. The local tokens are cleared whatever the server says, because a signed-out
+    /// user who is still holding a token because the network hiccuped is the worse outcome —
+    /// especially on a shared guard tablet.
+    /// </summary>
+    public async Task SignOutAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var refreshToken = await _tokens.GetRefreshTokenAsync();
+
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                using var content = JsonContent.Create(new { refreshToken }, options: Json);
+                using var _ = await _http.PostAsync("api/v1/identity/auth/signout", content, ct);
+            }
+        }
+        catch (Exception)
+        {
+            // Best effort. The local clear below is the part that matters.
+        }
+        finally
+        {
+            await _tokens.ClearAsync();
+        }
+    }
+
+    /// <summary>Whether a usable, unexpired access token is held.</summary>
+    public async Task<bool> IsSignedInAsync() =>
+        !string.IsNullOrEmpty(await _tokens.GetAccessTokenAsync())
+        || !string.IsNullOrEmpty(await _tokens.GetRefreshTokenAsync());
 
     // ---- gate ----------------------------------------------------------
 
@@ -310,6 +418,39 @@ public sealed class SocietyHubApiClient
 
         await _tokens.SaveAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresAtUtc);
         return true;
+    }
+
+    /// <summary>
+    /// The unauthenticated equivalent of <see cref="EnsureSuccessAsync"/>, for the sign-in
+    /// calls that must not attempt a token refresh on a 401.
+    /// </summary>
+    private static async Task ThrowIfFailedAsync(
+        HttpResponseMessage response, string path, CancellationToken ct)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        string? code = null;
+        var message = $"{path} failed with {(int)response.StatusCode}.";
+
+        try
+        {
+            var problem = await response.Content.ReadFromJsonAsync<ProblemView>(Json, ct);
+
+            if (problem is not null)
+            {
+                code = problem.Code;
+                message = problem.Detail ?? problem.Title ?? message;
+            }
+        }
+        catch (JsonException)
+        {
+            // Not a ProblemDetails body. The status code still carries the meaning.
+        }
+
+        throw new ApiException(response.StatusCode, code, message);
     }
 
     /// <summary>

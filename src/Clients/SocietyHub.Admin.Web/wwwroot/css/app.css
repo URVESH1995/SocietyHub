@@ -113,3 +113,117 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* --- Sign-in -----------------------------------------------------------
+   Deliberately plain and wide-tapped. The same component renders on a guard
+   tablet held at arm's length in daylight, so targets are large and contrast
+   is high rather than subtle. */
+
+.sh-shell--anonymous {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f5f5f7;
+}
+
+.sh-signin-page {
+    width: min(28rem, 92vw);
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+
+.sh-signin__title { margin: 0 0 1.25rem; font-size: 1.5rem; }
+.sh-signin__label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.sh-signin__hint  { margin: 0 0 0.5rem; color: #555; font-size: 0.875rem; }
+.sh-signin__sent  { margin: 0 0 1rem; }
+
+.sh-signin__input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.125rem;
+    border: 1px solid #b9b9c6;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+/* A one-time code is read digit by digit off another screen; letter-spacing
+   makes transcription errors visible before submission rather than after. */
+.sh-signin__input--code {
+    letter-spacing: 0.5em;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.sh-signin__primary {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #1b1b3a;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.sh-signin__primary:disabled { background: #9a9ab0; cursor: default; }
+
+.sh-signin__secondary {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.sh-signin__secondary button {
+    background: none;
+    border: none;
+    color: #1b1b3a;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.sh-signin__society {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    background: #f0f0f5;
+    border: 1px solid #d0d0dd;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.sh-signin__error {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #7a1020;
+    background: #fdecef;
+    border: 1px solid #f3c0ca;
+    border-radius: 0.375rem;
+}
+
+/* Visibly not a production affordance. This shows a real credential on screen,
+   and it should look like something that must never ship. */
+.sh-signin__devcode {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    font-family: ui-monospace, monospace;
+    color: #6b4b00;
+    background: #fff6d9;
+    border: 1px dashed #d9b23a;
+    border-radius: 0.375rem;
+}
+
+.sh-shell__user { margin-left: auto; padding: 0 0.75rem; color: #444; }
+
+.sh-shell__signout {
+    background: none;
+    border: 1px solid #c9c9d4;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+}

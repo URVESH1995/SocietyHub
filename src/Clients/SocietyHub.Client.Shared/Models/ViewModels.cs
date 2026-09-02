@@ -185,3 +185,57 @@ public sealed record CheckInRequest(
 
 public sealed record RaiseComplaintRequest(
     Guid FlatId, string Category, string Priority, string Title, string Description);
+
+// ---- authentication ----------------------------------------------------
+
+/// <summary>
+/// The response to asking for a code.
+///
+/// <c>DevelopmentCode</c> is populated only by a development build, where no SMS is sent.
+/// It is on the wire deliberately so a demo works without a telecom account — and it is the
+/// reason the sign-in screen shows the code on screen in development and must never do so
+/// anywhere else.
+/// </summary>
+public sealed record OtpChallengeView
+{
+    public DateTimeOffset ExpiresAtUtc { get; init; }
+
+    public int CodeLength { get; init; } = 6;
+
+    public string? DevelopmentCode { get; init; }
+}
+
+/// <summary>
+/// What verifying a code produces.
+///
+/// Two shapes come back on the same 200, because a phone can belong to more than one society:
+/// either tokens, or a list to choose from. Modelled as one type with a discriminator rather
+/// than two, so a caller cannot forget the second case — which would strand every multi-society
+/// resident at a screen that appears to do nothing.
+/// </summary>
+public sealed record SignInResultView
+{
+    public TokenPairView? Tokens { get; init; }
+
+    public Guid? UserId { get; init; }
+
+    public string? FullName { get; init; }
+
+    public IReadOnlyList<SocietyOptionView> Societies { get; init; } = [];
+
+    public bool NeedsSocietyChoice => Tokens is null && Societies.Count > 0;
+}
+
+public sealed record SocietyOptionView(Guid SocietyId, string Role, Guid? FlatId);
+
+/// <summary>Who the caller is, according to the token they are holding.</summary>
+public sealed record MeView
+{
+    public Guid UserId { get; init; }
+
+    public string FullName { get; init; } = string.Empty;
+
+    public Guid SocietyId { get; init; }
+
+    public IReadOnlyList<string> Roles { get; init; } = [];
+}
