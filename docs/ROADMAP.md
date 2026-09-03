@@ -9,11 +9,11 @@ source of truth, not any external board.
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
 | **1** | Daily operations | 65 | 65 | 100% |
-| **2** | Bulk service drives | 4 | 22 | 18% |
+| **2** | Bulk service drives | 11 | 22 | 50% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **93** | **182** | **51%** |
+| | **Total** | **100** | **182** | **55%** |
 
 ---
 
@@ -30,10 +30,10 @@ supply — the app builds and runs without it and simply receives no push.
 
 | | Count |
 | --- | --- |
-| Services | 7 — Identity, Society, Gate, Helpdesk, Notification, Notice, Vendor |
+| Services | 9 — Identity, Society, Gate, Helpdesk, Notification, Notice, Vendor, Drives |
 | Client apps | 3 — Admin web (Blazor WASM PWA), Resident (MAUI), Guard (MAUI) |
 | Building blocks | 8 — SharedKernel, Contracts, Persistence, Messaging, Caching, Web, Features, ServiceDefaults |
-| Tests | **351 passing**, 4 of them against real containers |
+| Tests | **368 passing**, 4 of them against real containers |
 | Release build | Clean with `-warnaserror`, zero warnings |
 
 ### What has actually been proven, and what has only been built
@@ -74,7 +74,7 @@ Three levels, cheapest first. Each answers a different question.
 dotnet test SocietyHub.slnx
 ```
 
-351 tests. Four report as skipped without Docker; that is expected and correct.
+368 tests. Four report as skipped without Docker; that is expected and correct.
 
 ### 2. Is the isolation real against a real database? (Docker required, ~2 minutes)
 
@@ -327,13 +327,13 @@ region-pluggable residency — genuinely can wait.
 - [x] `P2-04` **Ratings and reliability** — no-shows counted apart from cancellations
 
 ### Service catalogue and drives
-- [ ] `P2-05` Service catalogue with localised names and descriptions
-- [ ] `P2-06` `ServiceDrive` aggregate — open, quorum, cut-off
-- [ ] `P2-07` Enrolment and live join counter in Redis
-- [ ] `P2-08` Distributed lock so concurrent enrolment cannot miscount quorum
-- [ ] `P2-09` Slab price recalculation as the counter crosses thresholds
-- [ ] `P2-10` **MassTransit saga state machine** for the drive lifecycle
-- [ ] `P2-11` Compensation and refund when quorum is missed at cut-off
+- [x] `P2-05` **Service catalogue** — ten services, bilingual, code stable across renames
+- [x] `P2-06` **`ServiceDrive`** — quorum counted in flats, slabs in units, cut-off, capacity
+- [x] `P2-07` **Enrolment and live counter** — Redis-cached, refreshed only after commit
+- [x] `P2-08` **Distributed lock** per drive, held across read and write, with a jittered wait
+- [x] `P2-09` **Slab repricing** — everyone settles to the final price, early joiners refunded
+- [x] `P2-10` **Drive lifecycle worker** — closes at cut-off (see the note on why not a saga)
+- [x] `P2-11` **Compensation** — refunds tracked per participant, resumable after a crash
 
 ### Scheduling service
 - [ ] `P2-12` Slot definition and capacity

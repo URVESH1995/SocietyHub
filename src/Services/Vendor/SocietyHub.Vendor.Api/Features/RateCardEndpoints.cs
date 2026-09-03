@@ -61,6 +61,13 @@ public static class RateCardEndpoints
              .WithValidation<CreateRateCardRequest>()
              .WithSummary("Creates and publishes a rate card, validating the slab set.");
 
+        // Read by the Drives service when pricing an enrolment. Service-to-service, so it
+        // requires a society token like any other caller — there is no unauthenticated
+        // internal path, because "internal" stops being true the moment the cluster grows.
+        group.MapGet("/{id:guid}/slabs", SlabsAsync)
+             .RequireAuthorization(SocietyHubPolicies.RequireSociety)
+             .WithSummary("The raw slab table for a rate card.");
+
         // Quoting is open to any society user. A committee cannot decide whether a drive is
         // worth opening without seeing what it would cost, and hiding the price until after
         // they commit is how a platform loses a committee's trust once.
@@ -69,6 +76,23 @@ public static class RateCardEndpoints
              .WithSummary("Prices a service at a given number of participants.");
 
         return app;
+    }
+
+    private static async Task<IResult> SlabsAsync(
+        Guid id,
+        VendorDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var slabs = await context.PriceSlabs
+            .AsNoTracking()
+            .Where(s => s.RateCardId == id)
+            .OrderBy(s => s.MinQuantity)
+            .Select(s => new { s.MinQuantity, s.MaxQuantity, s.UnitPricePaise })
+            .ToListAsync(cancellationToken);
+
+        return slabs.Count == 0
+            ? Error.NotFound("rate.not_found", "No such rate card.").ToProblem()
+            : Results.Ok(slabs);
     }
 
     private static async Task<IResult> CreateAsync(

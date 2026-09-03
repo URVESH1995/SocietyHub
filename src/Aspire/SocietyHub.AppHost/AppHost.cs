@@ -25,6 +25,7 @@ var helpdeskDb = sql.AddDatabase("helpdeskdb");
 var notificationDb = sql.AddDatabase("notificationdb");
 var noticeDb = sql.AddDatabase("noticedb");
 var vendorDb = sql.AddDatabase("vendordb");
+var drivesDb = sql.AddDatabase("drivesdb");
 
 // Shared cache: society master data, visitor OTP codes, idempotency keys and the
 // distributed locks that keep bulk-service quorum counting correct in Phase 2.
@@ -86,6 +87,15 @@ var vendorApi = builder.AddProject<Projects.SocietyHub_Vendor_Api>("vendor-api")
                        .WithReference(rabbitmq).WaitFor(rabbitmq)
                        .WithHttpHealthCheck("/health");
 
+// Group buying. Reads rate cards from the vendor service synchronously, because a resident
+// tapping Join has to be told a price now; everything else between them goes through events.
+var drivesApi = builder.AddProject<Projects.SocietyHub_Drives_Api>("drives-api")
+                       .WithReference(drivesDb).WaitFor(drivesDb)
+                       .WithReference(redis).WaitFor(redis)
+                       .WithReference(rabbitmq).WaitFor(rabbitmq)
+                       .WithReference(vendorApi)
+                       .WithHttpHealthCheck("/health");
+
 // The gateway is the only component with a publicly reachable endpoint. Everything else is
 // reachable solely through service discovery inside the compose network.
 //
@@ -109,6 +119,7 @@ builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
        .WithReference(notificationApi).WaitFor(notificationApi)
        .WithReference(noticeApi).WaitFor(noticeApi)
        .WithReference(vendorApi).WaitFor(vendorApi)
+       .WithReference(drivesApi).WaitFor(drivesApi)
        .WithReference(redis)
        .WithExternalHttpEndpoints()
        .WithHttpHealthCheck("/health");
