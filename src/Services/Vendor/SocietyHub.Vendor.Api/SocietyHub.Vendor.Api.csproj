@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.ServiceDefaults\SocietyHub.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Web\SocietyHub.Web.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Persistence\SocietyHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Messaging\SocietyHub.Messaging.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Caching\SocietyHub.Caching.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Contracts\SocietyHub.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\SocietyHub.Features\SocietyHub.Features.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Aspire.RabbitMQ.Client" />
+    <PackageReference Include="Aspire.StackExchange.Redis" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Scalar.AspNetCore" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

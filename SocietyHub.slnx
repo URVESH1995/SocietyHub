@@ -39,6 +39,9 @@
   <Folder Name="/src/Services/Society/">
     <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
   </Folder>
+  <Folder Name="/src/Services/Vendor/">
+    <Project Path="src/Services/Vendor/SocietyHub.Vendor.Api/SocietyHub.Vendor.Api.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SocietyHub.Client.Tests/SocietyHub.Client.Tests.csproj" />
     <Project Path="tests/SocietyHub.Features.Tests/SocietyHub.Features.Tests.csproj" />
@@ -52,5 +55,6 @@
     <Project Path="tests/SocietyHub.Platform.Tests/SocietyHub.Platform.Tests.csproj" />
     <Project Path="tests/SocietyHub.Society.Tests/SocietyHub.Society.Tests.csproj" />
     <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Vendor.Tests/SocietyHub.Vendor.Tests.csproj" />
   </Folder>
 </Solution>

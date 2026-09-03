@@ -9,11 +9,11 @@ source of truth, not any external board.
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
 | **1** | Daily operations | 65 | 65 | 100% |
-| **2** | Bulk service drives | 0 | 22 | 0% |
+| **2** | Bulk service drives | 4 | 22 | 18% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **89** | **182** | **49%** |
+| | **Total** | **93** | **182** | **51%** |
 
 ---
 
@@ -30,10 +30,10 @@ supply — the app builds and runs without it and simply receives no push.
 
 | | Count |
 | --- | --- |
-| Services | 6 — Identity, Society, Gate, Helpdesk, Notification, Notice |
+| Services | 7 — Identity, Society, Gate, Helpdesk, Notification, Notice, Vendor |
 | Client apps | 3 — Admin web (Blazor WASM PWA), Resident (MAUI), Guard (MAUI) |
 | Building blocks | 8 — SharedKernel, Contracts, Persistence, Messaging, Caching, Web, Features, ServiceDefaults |
-| Tests | **319 passing**, 4 of them against real containers |
+| Tests | **351 passing**, 4 of them against real containers |
 | Release build | Clean with `-warnaserror`, zero warnings |
 
 ### What has actually been proven, and what has only been built
@@ -74,7 +74,7 @@ Three levels, cheapest first. Each answers a different question.
 dotnet test SocietyHub.slnx
 ```
 
-319 tests. Four report as skipped without Docker; that is expected and correct.
+351 tests. Four report as skipped without Docker; that is expected and correct.
 
 ### 2. Is the isolation real against a real database? (Docker required, ~2 minutes)
 
@@ -93,7 +93,7 @@ be faked by SQLite. `Skipped: 0` in the output is what tells you they actually r
 ./scripts/run.sh
 ```
 
-Brings up the full stack and opens the **Aspire dashboard** — a live view of all six services,
+Brings up the full stack and opens the **Aspire dashboard** — a live view of every service,
 their health, logs, traces and the RabbitMQ queues. This is the first real UI, and it is a
 genuine one: it shows the priority lanes with messages moving through them.
 
@@ -321,10 +321,10 @@ region-pluggable residency — genuinely can wait.
 **Goal:** the group-buying saga, end to end, with money moving.
 
 ### Vendor service
-- [ ] `P2-01` Vendor aggregate, onboarding, KYC
-- [ ] `P2-02` Rate cards with slab pricing
-- [ ] `P2-03` Technician roster and coverage areas
-- [ ] `P2-04` Vendor ratings and performance history
+- [x] `P2-01` **Vendor aggregate** — onboarding, KYC state machine, GSTIN/PAN cross-check
+- [x] `P2-02` **Rate cards** — contiguous slabs, non-increasing prices, quote with saving
+- [x] `P2-03` **Technician roster** — police-verification expiry, per-person daily capacity
+- [x] `P2-04` **Ratings and reliability** — no-shows counted apart from cancellations
 
 ### Service catalogue and drives
 - [ ] `P2-05` Service catalogue with localised names and descriptions

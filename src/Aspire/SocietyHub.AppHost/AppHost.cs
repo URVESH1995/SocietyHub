@@ -24,6 +24,7 @@ var gateDb = sql.AddDatabase("gatedb");
 var helpdeskDb = sql.AddDatabase("helpdeskdb");
 var notificationDb = sql.AddDatabase("notificationdb");
 var noticeDb = sql.AddDatabase("noticedb");
+var vendorDb = sql.AddDatabase("vendordb");
 
 // Shared cache: society master data, visitor OTP codes, idempotency keys and the
 // distributed locks that keep bulk-service quorum counting correct in Phase 2.
@@ -77,9 +78,18 @@ var noticeApi = builder.AddProject<Projects.SocietyHub_Notice_Api>("notice-api")
                        .WithReference(rabbitmq).WaitFor(rabbitmq)
                        .WithHttpHealthCheck("/health");
 
-// The gateway is the only component with a publicly reachable endpoint. Everything
-// else is reachable solely through service discovery inside the compose network.
-// The gateway's port is pinned rather than left to Aspire's dynamic assignment.
+// The one service whose data is platform-wide rather than society-scoped: a vendor serves many
+// societies, which is the only reason a bulk discount exists at all.
+var vendorApi = builder.AddProject<Projects.SocietyHub_Vendor_Api>("vendor-api")
+                       .WithReference(vendorDb).WaitFor(vendorDb)
+                       .WithReference(redis).WaitFor(redis)
+                       .WithReference(rabbitmq).WaitFor(rabbitmq)
+                       .WithHttpHealthCheck("/health");
+
+// The gateway is the only component with a publicly reachable endpoint. Everything else is
+// reachable solely through service discovery inside the compose network.
+//
+// Its port is pinned rather than left to Aspire's dynamic assignment.
 //
 // Every other service can move freely — they are reached through service discovery, which
 // resolves whatever port they landed on. The gateway cannot: it is the address the three
@@ -98,6 +108,7 @@ builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
        .WithReference(helpdeskApi).WaitFor(helpdeskApi)
        .WithReference(notificationApi).WaitFor(notificationApi)
        .WithReference(noticeApi).WaitFor(noticeApi)
+       .WithReference(vendorApi).WaitFor(vendorApi)
        .WithReference(redis)
        .WithExternalHttpEndpoints()
        .WithHttpHealthCheck("/health");
