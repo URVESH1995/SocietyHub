@@ -227,3 +227,54 @@ code {
     padding: 0.25rem 0.75rem;
     cursor: pointer;
 }
+
+/* --- Bulk service drives ------------------------------------------------
+   The progress bar is the component that does the work here: it turns an
+   abstract quorum into a number a resident can act on. */
+
+.sh-drive {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fff;
+    border: 1px solid #e2e2ec;
+    border-radius: 0.5rem;
+}
+
+.sh-drive.is-confirmed { border-color: #1f7a3d; }
+
+.sh-drive__header { display: flex; justify-content: space-between; align-items: baseline; }
+.sh-drive__title { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.sh-drive__status { color: #555; font-size: 0.85rem; }
+
+.sh-drive__progress {
+    height: 0.6rem;
+    background: #ececf3;
+    border-radius: 0.3rem;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.sh-drive__bar {
+    height: 100%;
+    background: #1b1b3a;
+    transition: width 0.3s ease;
+}
+
+.sh-drive.is-confirmed .sh-drive__bar { background: #1f7a3d; }
+
+.sh-drive__count { margin: 0.25rem 0; }
+.sh-drive__cutoff { margin: 0.25rem 0; color: #555; font-size: 0.9rem; }
+
+.sh-drive__join {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    background: #1b1b3a;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.sh-drive__join:disabled { background: #9a9ab0; cursor: default; }

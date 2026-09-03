@@ -1,0 +1,98 @@
+@page "/drives"
+@inject SocietyHubApiClient Api
+
+<PageTitle>SocietyHub</PageTitle>
+
+<h1>@Strings.Nav_Drives</h1>
+
+@*
+    Gated on the feature, because bulk drives are a Standard-plan capability and a Basic society
+    should never see a page whose every action returns 402.
+*@
+
+<FeatureView For="@FeatureKey.BulkServiceDrives">
+    <ChildContent>
+    @if (_loading)
+    {
+        <p>@Strings.Common_Loading</p>
+    }
+    else if (_error is not null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @_error
+            <button class="btn btn-link" @onclick="LoadAsync">@Strings.Common_Retry</button>
+        </div>
+    }
+    else if (_drives.Count == 0)
+    {
+        <p>No drives are running. Open one to pool a service across flats.</p>
+    }
+    else
+    {
+        @foreach (var drive in _drives)
+        {
+            <DriveCard Drive="drive" ServiceName="@NameFor(drive.ServiceCode)" />
+        }
+    }
+    </ChildContent>
+
+    <Fallback>
+        @* A committee on Basic sees why rather than an empty page. The upgrade is theirs to
+           make, and they cannot make it if nobody tells them it exists. *@
+        <div class="alert alert-info" role="alert">@Strings.Error_FeatureNotEnabled</div>
+    </Fallback>
+</FeatureView>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<DriveView> _drives = [];
+    private IReadOnlyList<CatalogueItemView> _catalogue = [];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            // Concurrently. The catalogue changes a few times a year and the drives every
+            // minute, but fetching them in sequence doubles the wait for no benefit.
+            var drives = Api.GetDrivesAsync();
+            var catalogue = Api.GetServiceCatalogueAsync();
+
+            await Task.WhenAll(drives, catalogue);
+
+            _drives = await drives;
+            _catalogue = await catalogue;
+        }
+        catch (ApiException ex) when (ex.IsFeatureDisabled)
+        {
+            _error = Strings.Error_FeatureNotEnabled;
+        }
+        catch (ApiException ex) when (ex.IsUnauthorised)
+        {
+            _error = Strings.Error_SessionExpired;
+        }
+        catch (Exception)
+        {
+            _error = Strings.Error_Network;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <summary>
+    /// Turns a service code into something a person can read.
+    ///
+    /// Falls back to the code rather than showing nothing, because an unrecognised code means
+    /// the catalogue and the drive disagree — and a blank card hides that, while a visible
+    /// "ac.service.split" makes somebody ask why.
+    /// </summary>
+    private string NameFor(string serviceCode) =>
+        _catalogue.FirstOrDefault(c => c.Code == serviceCode)?.Name ?? serviceCode;
+}

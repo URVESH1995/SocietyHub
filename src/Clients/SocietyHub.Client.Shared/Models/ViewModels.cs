@@ -239,3 +239,72 @@ public sealed record MeView
 
     public IReadOnlyList<string> Roles { get; init; } = [];
 }
+
+// ---- bulk service drives -----------------------------------------------
+
+public sealed record CatalogueItemView
+{
+    public string Code { get; init; } = string.Empty;
+
+    /// <summary>Already in the caller's language. The server resolved it.</summary>
+    public string Name { get; init; } = string.Empty;
+
+    public string UnitLabel { get; init; } = string.Empty;
+
+    public string Category { get; init; } = string.Empty;
+
+    public int SuggestedQuorum { get; init; }
+}
+
+public sealed record DriveView
+{
+    public Guid Id { get; init; }
+
+    public string ServiceCode { get; init; } = string.Empty;
+
+    public string Status { get; init; } = string.Empty;
+
+    public Guid VendorId { get; init; }
+
+    public int Participants { get; init; }
+
+    public int Units { get; init; }
+
+    public int Quorum { get; init; }
+
+    public int? Capacity { get; init; }
+
+    public int ParticipantsToQuorum { get; init; }
+
+    public bool QuorumReached { get; init; }
+
+    public DateTimeOffset? CutOffAtUtc { get; init; }
+
+    public DateTimeOffset? ServiceDateUtc { get; init; }
+
+    public long? FinalUnitPricePaise { get; init; }
+
+    public bool IsOpen => Status == "Open";
+
+    /// <summary>
+    /// How full the progress bar is.
+    ///
+    /// Capped at 100 rather than allowed to overflow: a drive at 15 of 10 is a good outcome,
+    /// and a bar rendering at 150% looks like a bug to the resident who caused it.
+    /// </summary>
+    public int QuorumPercent =>
+        Quorum == 0 ? 0 : Math.Min(100, Participants * 100 / Quorum);
+}
+
+public sealed record EnrolmentResultView
+{
+    public Guid EnrolmentId { get; init; }
+
+    public int Units { get; init; }
+
+    public long UnitPricePaise { get; init; }
+
+    public long AmountPaise { get; init; }
+
+    public string? Note { get; init; }
+}

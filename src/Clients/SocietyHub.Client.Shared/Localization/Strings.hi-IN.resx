@@ -149,4 +149,15 @@
   <data name="Access_WrongAppTitle"><value>यह कंसोल समिति सदस्यों के लिए है</value></data>
   <data name="Access_WrongAppBody"><value>इस सोसाइटी में आपकी भूमिका एडमिन कंसोल का उपयोग नहीं करती। निवासी SocietyHub ऐप का उपयोग करें; गार्ड गेट टैबलेट का उपयोग करें।</value></data>
   <data name="Access_SignedInAsRole"><value>आप {0} के रूप में साइन इन हैं।</value></data>
+
+  <!-- Bulk service drives -->
+  <data name="Nav_Drives"><value>सामूहिक सेवाएँ</value></data>
+  <data name="Drive_Join"><value>इस ड्राइव में शामिल हों</value></data>
+  <data name="Drive_Leave"><value>बाहर निकलें</value></data>
+  <data name="Drive_NeedsMore"><value>{0} और फ्लैट चाहिए — {1} शामिल हो चुके हैं</value></data>
+  <data name="Drive_Confirmed"><value>तय हो गया — {0} फ्लैट शामिल हुए</value></data>
+  <data name="Drive_ClosesOn"><value>{0} को शामिल होना बंद</value></data>
+  <data name="Drive_YouSave"><value>आपकी बचत {0}</value></data>
+  <data name="Drive_PriceMayFall"><value>अगर और पड़ोसी शामिल होते हैं तो कीमत घटेगी और अंतर आपको वापस मिलेगा।</value></data>
+  <data name="Drive_Cancelled"><value>इस ड्राइव में पर्याप्त फ्लैट नहीं जुड़े। आपका पैसा वापस किया जा रहा है।</value></data>
 </root>

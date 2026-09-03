@@ -52,7 +52,12 @@ builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<DrivesDbContex
 builder.Services.AddScoped<IOutbox, EfOutbox>();
 builder.Services.AddScoped<IInbox, EfInbox>();
 
-builder.Services.AddSocietyHubMessaging(builder.Configuration, "drives");
+builder.Services.AddSocietyHubMessaging(builder.Configuration, "drives", messaging =>
+{
+    // Bulk lane: closing out a refund is important and never urgent, and it must not share a
+    // queue with anything a resident is waiting on.
+    messaging.AddConsumer<DriveRefundIssuedConsumer>(MessageLane.Bulk);
+});
 
 builder.Services.AddScoped<OutboxDispatcher>();
 builder.Services.AddHostedService<OutboxProcessor>();

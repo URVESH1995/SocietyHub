@@ -1,0 +1,87 @@
+@*
+    One bulk-service drive.
+
+    The progress bar and the "N more to unlock" line are the whole point of this component.
+    A resident who can see the discount one neighbour away is the one who forwards the link,
+    and forwarding is how a drive reaches quorum at all.
+*@
+
+<article class="sh-drive @(Drive.QuorumReached ? "is-confirmed" : null)">
+    <header class="sh-drive__header">
+        <h3 class="sh-drive__title">@ServiceName</h3>
+        <span class="sh-drive__status">@Drive.Status</span>
+    </header>
+
+    <div class="sh-drive__progress" role="progressbar"
+         aria-valuenow="@Drive.Participants"
+         aria-valuemin="0"
+         aria-valuemax="@Drive.Quorum">
+        <div class="sh-drive__bar" style="width:@(Drive.QuorumPercent)%"></div>
+    </div>
+
+    <p class="sh-drive__count">
+        @if (Drive.QuorumReached)
+        {
+            @* Confirmed is the message that matters most: it turns "I might get this" into
+               "this is happening", which is when people tell a neighbour. *@
+            <strong>@string.Format(Strings.Drive_Confirmed, Drive.Participants)</strong>
+        }
+        else
+        {
+            @string.Format(
+                Strings.Drive_NeedsMore, Drive.ParticipantsToQuorum, Drive.Participants)
+        }
+    </p>
+
+    @if (Drive.CutOffAtUtc is { } cutOff)
+    {
+        <p class="sh-drive__cutoff">
+            @string.Format(Strings.Drive_ClosesOn, cutOff.ToLocalTime().ToString("d MMM"))
+        </p>
+    }
+
+    @if (Drive.IsOpen && OnJoin.HasDelegate)
+    {
+        <button type="button" class="sh-drive__join" disabled="@_busy" @onclick="JoinAsync">
+            @(_busy ? Strings.Common_Loading : Strings.Drive_Join)
+        </button>
+    }
+</article>
+
+@code {
+    private bool _busy;
+
+    [Parameter, EditorRequired]
+    public DriveView Drive { get; set; } = default!;
+
+    /// <summary>
+    /// Resolved by the caller from the catalogue, because the drive itself carries only a
+    /// service code — a stable identifier that is deliberately never shown to anyone.
+    /// </summary>
+    [Parameter]
+    public string ServiceName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<Guid> OnJoin { get; set; }
+
+    private async Task JoinAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        // Guarded harder than most buttons. A double tap here is a second charge, and the
+        // Idempotency-Key on the request is the second line of defence rather than the first.
+        _busy = true;
+
+        try
+        {
+            await OnJoin.InvokeAsync(Drive.Id);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

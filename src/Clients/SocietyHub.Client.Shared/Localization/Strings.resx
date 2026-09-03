@@ -148,4 +148,15 @@
   <data name="Access_WrongAppTitle"><value>This console is for committee members</value></data>
   <data name="Access_WrongAppBody"><value>Your role in this society does not use the admin console. Residents should use the SocietyHub app; guards should use the gate tablet.</value></data>
   <data name="Access_SignedInAsRole"><value>You are signed in as {0}.</value></data>
+
+  <!-- Bulk service drives -->
+  <data name="Nav_Drives"><value>Group services</value></data>
+  <data name="Drive_Join"><value>Join this drive</value></data>
+  <data name="Drive_Leave"><value>Leave</value></data>
+  <data name="Drive_NeedsMore"><value>{0} more flats needed — {1} have joined</value></data>
+  <data name="Drive_Confirmed"><value>Going ahead — {0} flats joined</value></data>
+  <data name="Drive_ClosesOn"><value>Joining closes {0}</value></data>
+  <data name="Drive_YouSave"><value>You save {0}</value></data>
+  <data name="Drive_PriceMayFall"><value>If more neighbours join, the price falls and you are refunded the difference.</value></data>
+  <data name="Drive_Cancelled"><value>This drive did not reach enough flats. Your money is being returned.</value></data>
 </root>

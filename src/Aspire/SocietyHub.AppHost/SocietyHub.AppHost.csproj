@@ -25,6 +25,8 @@
     <ProjectReference Include="..\..\Services\Notice\SocietyHub.Notice.Api\SocietyHub.Notice.Api.csproj" />
     <ProjectReference Include="..\..\Services\Vendor\SocietyHub.Vendor.Api\SocietyHub.Vendor.Api.csproj" />
     <ProjectReference Include="..\..\Services\Drives\SocietyHub.Drives.Api\SocietyHub.Drives.Api.csproj" />
+    <ProjectReference Include="..\..\Services\Scheduling\SocietyHub.Scheduling.Api\SocietyHub.Scheduling.Api.csproj" />
+    <ProjectReference Include="..\..\Services\Payments\SocietyHub.Payments.Api\SocietyHub.Payments.Api.csproj" />
   </ItemGroup>
 
 </Project>

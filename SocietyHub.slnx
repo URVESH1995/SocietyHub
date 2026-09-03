@@ -39,6 +39,12 @@
   <Folder Name="/src/Services/Notification/">
     <Project Path="src/Services/Notification/SocietyHub.Notification.Api/SocietyHub.Notification.Api.csproj" />
   </Folder>
+  <Folder Name="/src/Services/Payments/">
+    <Project Path="src/Services/Payments/SocietyHub.Payments.Api/SocietyHub.Payments.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Scheduling/">
+    <Project Path="src/Services/Scheduling/SocietyHub.Scheduling.Api/SocietyHub.Scheduling.Api.csproj" />
+  </Folder>
   <Folder Name="/src/Services/Society/">
     <Project Path="src/Services/Society/SocietyHub.Society.Api/SocietyHub.Society.Api.csproj" />
   </Folder>
@@ -55,8 +61,10 @@
     <Project Path="tests/SocietyHub.IntegrationTests/SocietyHub.IntegrationTests.csproj" />
     <Project Path="tests/SocietyHub.Notice.Tests/SocietyHub.Notice.Tests.csproj" />
     <Project Path="tests/SocietyHub.Notification.Tests/SocietyHub.Notification.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Payments.Tests/SocietyHub.Payments.Tests.csproj" />
     <Project Path="tests/SocietyHub.Persistence.Tests/SocietyHub.Persistence.Tests.csproj" />
     <Project Path="tests/SocietyHub.Platform.Tests/SocietyHub.Platform.Tests.csproj" />
+    <Project Path="tests/SocietyHub.Scheduling.Tests/SocietyHub.Scheduling.Tests.csproj" />
     <Project Path="tests/SocietyHub.Society.Tests/SocietyHub.Society.Tests.csproj" />
     <Project Path="tests/SocietyHub.Tenancy.Tests/SocietyHub.Tenancy.Tests.csproj" />
     <Project Path="tests/SocietyHub.Vendor.Tests/SocietyHub.Vendor.Tests.csproj" />

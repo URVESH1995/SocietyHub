@@ -201,6 +201,30 @@ public sealed class SocietyHubApiClient
         !string.IsNullOrEmpty(await _tokens.GetAccessTokenAsync())
         || !string.IsNullOrEmpty(await _tokens.GetRefreshTokenAsync());
 
+    // ---- bulk service drives ---------------------------------------------
+
+    public Task<IReadOnlyList<CatalogueItemView>> GetServiceCatalogueAsync(
+        CancellationToken ct = default) =>
+        GetListAsync<CatalogueItemView>("api/v1/drives/drives/catalogue", ct);
+
+    public Task<IReadOnlyList<DriveView>> GetDrivesAsync(CancellationToken ct = default) =>
+        GetListAsync<DriveView>("api/v1/drives/drives", ct);
+
+    public Task<DriveView> GetDriveAsync(Guid driveId, CancellationToken ct = default) =>
+        GetAsync<DriveView>($"api/v1/drives/drives/{driveId}", ct);
+
+    /// <summary>
+    /// Joins a drive. Carries an Idempotency-Key like every non-GET, which matters more here
+    /// than anywhere else in the client: a retried enrolment is a second charge.
+    /// </summary>
+    public Task<EnrolmentResultView> JoinDriveAsync(
+        Guid driveId, Guid flatId, int units, CancellationToken ct = default) =>
+        PostAsync<object, EnrolmentResultView>(
+            $"api/v1/drives/drives/{driveId}/enrol", new { flatId, units }, ct);
+
+    public Task LeaveDriveAsync(Guid driveId, Guid flatId, CancellationToken ct = default) =>
+        PostAsync($"api/v1/drives/drives/{driveId}/withdraw?flatId={flatId}", ct);
+
     // ---- notifications ---------------------------------------------------
 
     /// <summary>

@@ -108,3 +108,21 @@ public sealed record DriveRefundsCompleted : IntegrationEvent
 
     public required int RefundsIssued { get; init; }
 }
+
+/// <summary>
+/// One participant's money is back.
+///
+/// Closes the loop the Drives service opened with <see cref="DriveRefundRequested"/>. Drives
+/// marks the enrolment settled on receiving it, and moves the drive to Cancelled once none
+/// remain outstanding — which is why this is per participant rather than per drive.
+/// </summary>
+public sealed record DriveRefundIssued : IntegrationEvent
+{
+    public required Guid DriveId { get; init; }
+
+    public required Guid EnrolmentId { get; init; }
+
+    public required string RefundReference { get; init; }
+
+    public required long AmountPaise { get; init; }
+}

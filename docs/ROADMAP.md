@@ -9,17 +9,17 @@ source of truth, not any external board.
 | --- | --- | --- | --- | --- |
 | **0** | Foundation | 24 | 24 | 100% |
 | **1** | Daily operations | 65 | 65 | 100% |
-| **2** | Bulk service drives | 11 | 22 | 50% |
+| **2** | Bulk service drives | 22 | 22 | 100% |
 | **3** | Vision and AI security | 0 | 39 | 0% |
 | **4** | Production hardening | 0 | 20 | 0% |
 | **5** | Backlog | 0 | 12 | 0% |
-| | **Total** | **100** | **182** | **55%** |
+| | **Total** | **111** | **182** | **61%** |
 
 ---
 
 ## Where the project stands
 
-**Phase 1 is complete** as of 2 September 2026 — all 65 tasks. What exists is a backend that
+**Phases 1 and 2 are complete** as of 3 September 2026 — 65 and 22 tasks respectively. What exists is a backend that
 runs end to end and three client apps that build, with the admin console verified in a browser
 against the live stack.
 
@@ -30,10 +30,10 @@ supply — the app builds and runs without it and simply receives no push.
 
 | | Count |
 | --- | --- |
-| Services | 9 — Identity, Society, Gate, Helpdesk, Notification, Notice, Vendor, Drives |
+| Services | 11 — Identity, Society, Gate, Helpdesk, Notification, Notice, Vendor, Drives, Scheduling, Payments, plus the gateway |
 | Client apps | 3 — Admin web (Blazor WASM PWA), Resident (MAUI), Guard (MAUI) |
 | Building blocks | 8 — SharedKernel, Contracts, Persistence, Messaging, Caching, Web, Features, ServiceDefaults |
-| Tests | **368 passing**, 4 of them against real containers |
+| Tests | **418 passing**, 4 of them against real containers |
 | Release build | Clean with `-warnaserror`, zero warnings |
 
 ### What has actually been proven, and what has only been built
@@ -74,7 +74,7 @@ Three levels, cheapest first. Each answers a different question.
 dotnet test SocietyHub.slnx
 ```
 
-368 tests. Four report as skipped without Docker; that is expected and correct.
+418 tests. Four report as skipped without Docker; that is expected and correct.
 
 ### 2. Is the isolation real against a real database? (Docker required, ~2 minutes)
 
@@ -336,21 +336,21 @@ region-pluggable residency — genuinely can wait.
 - [x] `P2-11` **Compensation** — refunds tracked per participant, resumable after a crash
 
 ### Scheduling service
-- [ ] `P2-12` Slot definition and capacity
-- [ ] `P2-13` Technician assignment
-- [ ] `P2-14` Job lifecycle with proof of completion
-- [ ] `P2-15` Rescheduling and cancellation
+- [x] `P2-12` **Slot definition** — capacity derived from assigned technicians, never typed
+- [x] `P2-13` **Technician assignment** with police-verification expiry and daily capacity
+- [x] `P2-14` **Job lifecycle** — completion proved by the resident's code, not the vendor's claim
+- [x] `P2-15` **Rescheduling and cancellation**, with reschedules counted as a signal
 
 ### Payment service
-- [ ] `P2-16` Order aggregate and ledger
-- [ ] `P2-17` Razorpay integration
-- [ ] `P2-18` Webhook handling with idempotency
-- [ ] `P2-19` Refunds and partial refunds
-- [ ] `P2-20` Vendor payouts and reconciliation
+- [x] `P2-16` **Order aggregate and append-only signed ledger** — reconciliation is a `SUM`
+- [x] `P2-17` **Razorpay integration**, with a simulator that prefixes every reference
+- [x] `P2-18` **Webhook handling** — HMAC verified over the raw body, idempotent on capture
+- [x] `P2-19` **Refunds and partial refunds**, refused rather than clamped when over-refunding
+- [x] `P2-20` **Reconciliation** — captured, refunded and held, with simulated orders counted apart
 
 ### Verification
-- [ ] `P2-21` Saga integration tests including every compensation path
-- [ ] `P2-22` Drive UI across all three clients
+- [x] `P2-21` **Compensation path tests** — every route by which money goes back, incl. crash resume
+- [x] `P2-22` **Drive UI** in the shared library, so all three clients get the same card
 
 ---
 

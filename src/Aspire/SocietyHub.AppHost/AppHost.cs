@@ -26,6 +26,8 @@ var notificationDb = sql.AddDatabase("notificationdb");
 var noticeDb = sql.AddDatabase("noticedb");
 var vendorDb = sql.AddDatabase("vendordb");
 var drivesDb = sql.AddDatabase("drivesdb");
+var schedulingDb = sql.AddDatabase("schedulingdb");
+var paymentsDb = sql.AddDatabase("paymentsdb");
 
 // Shared cache: society master data, visitor OTP codes, idempotency keys and the
 // distributed locks that keep bulk-service quorum counting correct in Phase 2.
@@ -96,6 +98,21 @@ var drivesApi = builder.AddProject<Projects.SocietyHub_Drives_Api>("drives-api")
                        .WithReference(vendorApi)
                        .WithHttpHealthCheck("/health");
 
+// Slots, technicians and jobs — what a resident actually experiences once a drive lands.
+var schedulingApi = builder.AddProject<Projects.SocietyHub_Scheduling_Api>("scheduling-api")
+                           .WithReference(schedulingDb).WaitFor(schedulingDb)
+                           .WithReference(redis).WaitFor(redis)
+                           .WithReference(rabbitmq).WaitFor(rabbitmq)
+                           .WithHttpHealthCheck("/health");
+
+// Money. Isolated deliberately: it is the one service whose failures cost real rupees,
+// and the only one holding gateway credentials.
+var paymentsApi = builder.AddProject<Projects.SocietyHub_Payments_Api>("payments-api")
+                         .WithReference(paymentsDb).WaitFor(paymentsDb)
+                         .WithReference(redis).WaitFor(redis)
+                         .WithReference(rabbitmq).WaitFor(rabbitmq)
+                         .WithHttpHealthCheck("/health");
+
 // The gateway is the only component with a publicly reachable endpoint. Everything else is
 // reachable solely through service discovery inside the compose network.
 //
@@ -120,6 +137,8 @@ builder.AddProject<Projects.SocietyHub_ApiGateway>("apigateway")
        .WithReference(noticeApi).WaitFor(noticeApi)
        .WithReference(vendorApi).WaitFor(vendorApi)
        .WithReference(drivesApi).WaitFor(drivesApi)
+       .WithReference(schedulingApi).WaitFor(schedulingApi)
+       .WithReference(paymentsApi).WaitFor(paymentsApi)
        .WithReference(redis)
        .WithExternalHttpEndpoints()
        .WithHttpHealthCheck("/health");
